@@ -12,19 +12,31 @@ public class Vector {
         random = new Random(seed);
     }
 
+    private static void checkSizes(double[] ... arrays) {
+        int length = arrays[0].length;
+        for(double[] a : arrays) {
+            if (a.length != length) {
+                throw new RuntimeException("Vector length mismatch");
+            }
+        }
+    }
+
     public static void multiply(double[] a, double[] b, double[] product) {
+        checkSizes(a, b, product);
         for(int i = 0; i < product.length; i++) {
             product[i] = a[i] * b[i];
         }
     }
 
     public static void multiplyAndAdd(double[] a, double s, double[] result) {
+        checkSizes(a, result);
         for(int i = 0; i < result.length; i++) {
             result[i] += a[i] * s;
         }
     }
 
     public static void add(double[] a, double[] b, double[] sum) {
+        checkSizes(a, b, sum);
         for(int i = 0; i < sum.length; i++) {
             sum[i] = a[i] + b[i];
         }
@@ -32,7 +44,7 @@ public class Vector {
 
     public static void random(double[] a) {
         for(int i = 0; i < a.length; i++) {
-            a[i] = random.nextGaussian();
+            a[i] = random.nextDouble() - 0.5;
         }
     }
 
@@ -52,6 +64,7 @@ public class Vector {
     }
 
     public static void subtract(double[] a, double[] b, double[] result) {
+        checkSizes(a, b, result);
         for(int i = 0; i < result.length; i++) {
             result[i] = a[i] - b[i];
         }
@@ -68,8 +81,8 @@ public class Vector {
         return builder.toString();
     }
 
-    public static void print(double[] a) {
-        System.out.println(str(a));
+    public static void print(String label, double[] a) {
+        System.out.printf("%s: %s\n", label, str(a));
     }
 
     public static double sumSquared(double[] a) {

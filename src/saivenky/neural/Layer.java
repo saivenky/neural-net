@@ -1,14 +1,11 @@
 package saivenky.neural;
 
 import saivenky.neural.activation.ActivationFunction;
-import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.activation.Tanh;
 
 /**
  * Created by saivenky on 1/26/17.
  */
 public class Layer {
-    double[] bias;
     double[] weightedInput;
     Neuron[] neurons;
 
@@ -19,14 +16,13 @@ public class Layer {
     double[] error;
     double[] previousLayerError;
 
-    public Layer(int neuronCount, int previousLayerNeuronCount) {
-        bias = new double[neuronCount];
+    public Layer(int neuronCount, int previousLayerNeuronCount, ActivationFunction activationFunction) {
         weightedInput = new double[previousLayerNeuronCount];
         neurons = new Neuron[neuronCount];
         initializeNeurons(previousLayerNeuronCount);
         activation = new double[neuronCount];
         activation1 = new double[neuronCount];
-        activationFunction = Sigmoid.getInstance();
+        this.activationFunction = activationFunction;
         previousLayerError = new double[previousLayerNeuronCount];
     }
 
@@ -36,7 +32,7 @@ public class Layer {
         }
     }
 
-    public void computeActivation(double[] input) {
+    public void run(double[] input) {
         for(int i = 0; i < activation.length; i++) {
             double signal = neurons[i].signal(input, weightedInput);
             activation[i] = activationFunction.f(signal);
@@ -45,21 +41,24 @@ public class Layer {
     }
 
     public void backpropagate(double[] previousLayerActivation, double[] previousLayerActivation1) {
-        for(int i = 0; i < neurons.length; i++) {
-            Vector.multiplyAndAdd(neurons[i].weights, error[i], previousLayerError);
-        }
+        if(previousLayerActivation1 != null) {
+            for (int i = 0; i < neurons.length; i++) {
+                Vector.multiplyAndAdd(neurons[i].weights, error[i], previousLayerError);
+            }
 
-        Vector.multiply(previousLayerError, previousLayerActivation1, previousLayerError);
+            Vector.multiply(previousLayerError, previousLayerActivation1, previousLayerError);
+        }
 
         for(int i = 0; i < neurons.length; i++) {
             Vector.multiplyAndAdd(previousLayerActivation, error[i], neurons[i].weightError);
+            neurons[i].biasError += error[i];
         }
     }
 
     public void update(double rate) {
         for(int i = 0; i < neurons.length; i++) {
             neurons[i].update(rate);
-            neurons[i].bias -= rate * error[i];
         }
+        Vector.zero(previousLayerError);
     }
 }

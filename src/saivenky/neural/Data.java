@@ -39,4 +39,17 @@ public class Data {
 
         return samples;
     }
+
+    public static <T> void shuffle(T[] array) {
+        for(int i = 0; i < array.length; i++) {
+            swap(array, i, RANDOM.nextInt(array.length - i) + i);
+        }
+    }
+
+    private static <T> void swap(T[] array, int a, int b) {
+        if(a == b) return;
+        T temp = array[a];
+        array[a] = array[b];
+        array[b] = temp;
+    }
 }

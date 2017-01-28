@@ -1,7 +1,5 @@
 package saivenky.neural;
 
-import java.util.Random;
-
 /**
  * Created by saivenky on 1/26/17.
  */
@@ -11,26 +9,27 @@ public class Neuron {
         return Vector.sum(weightedInput) + bias;
     }
 
-    private static final Random random = new Random(1);
-    private static int neurons = 0;
-
     double[] weights;
     double bias;
     double[] weightError;
+    double biasError;
+
     public Neuron(int previousLayerNeurons) {
         weights = new double[previousLayerNeurons];
         weightError = new double[previousLayerNeurons];
         Vector.random(weights);
-        bias = random.nextGaussian();
+        bias = 0.1;
     }
 
     public double signal(double[] input, double[] weightedInput) {
         return signal(weights, input, weightedInput, bias);
     }
 
-    public void update(double learningRate) {
-        Vector.multiplyAndAdd(weightError, -learningRate, weights);
+    public void update(double rate) {
+        Vector.multiplyAndAdd(weightError, -rate, weights);
+        bias -= rate * biasError;
         Vector.zero(weightError);
+        biasError = 0;
     }
 
     @Override
