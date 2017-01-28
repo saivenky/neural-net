@@ -2,8 +2,8 @@ package saivenky.neural;
 
 import saivenky.neural.activation.ActivationFunction;
 import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.activation.Tanh;
 import saivenky.neural.cost.CostFunction;
+import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.cost.Square;
 
 /**
@@ -18,11 +18,9 @@ public class NeuralNetwork {
     CostFunction costFunction;
     Layer outputLayer;
 
-    public NeuralNetwork(int[] layerSizes, CostFunction costFunction) {
+    public NeuralNetwork(int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction) {
         layers = new Layer[layerSizes.length - 1];
         for(int i = 1; i < layerSizes.length; i++) {
-            ActivationFunction activationFunction =
-                    (i == layerSizes.length-1) ? Tanh.getInstance() : Sigmoid.getInstance();
             layers[i - 1] = new Layer(layerSizes[i], layerSizes[i-1], activationFunction);
         }
 
@@ -81,17 +79,24 @@ public class NeuralNetwork {
         trainedExamples += 1;
     }
 
-    public double loss(double[] input, double[] output) {
+    public double loss(double[] input, double[] output, CostFunction lossFunction) {
         run(input);
-        return costFunction.f(predicted, output);
+        return lossFunction.f(predicted, output);
     }
 
     public static void main(String[] args) {
-        int[] layers = {2, 4, 4, 1};
+        int[] layers = {2, 8, 2, 1};
         Vector.initialize(System.currentTimeMillis());
-        NeuralNetwork nn = new NeuralNetwork(layers, Square.getInstance());
+        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance());
 
-        Data.Example[] trainData = Data.generateXor(250);
+        Data.Function function = new Data.Function() {
+            @Override
+            double f(double x) {
+                return 9. / (3. + x);
+            }
+        };
+
+        Data.Example[] trainData = Data.generateFunction(function, 250);
         int batchSize = 1;
         double learningRate = 0.3;
 
@@ -108,13 +113,13 @@ public class NeuralNetwork {
                 }
             }
             double trainLoss = totalLoss(nn, trainData);
-            if (trainLoss < 0.002) {
+            if (trainLoss < 0.001) {
                 System.out.printf("iter: %d\ntrainLoss: %s\n", i+1, trainLoss);
                 break;
             }
         }
 
-        Data.Example[] testData = Data.generateXor(250);
+        Data.Example[] testData = Data.generateFunction(function, 250);
 
         //should be greater than 0.8
         System.out.println("\ntest data correct: " + check1d(nn, testData));
@@ -129,7 +134,7 @@ public class NeuralNetwork {
             if (nn.predicted.length != 1 && e.output.length != 1) {
                 throw new RuntimeException("Not 1-d data");
             }
-            double predicted = nn.predicted[0] > 0 ? 1 : -1;
+            double predicted = nn.predicted[0] > 0.5 ? 1 : 0;
             double actual = e.output[0];
             if (same(predicted, actual)) correct += 1;
         }
@@ -140,7 +145,7 @@ public class NeuralNetwork {
     private static double totalLoss(NeuralNetwork nn, Data.Example[] data) {
         double totalLoss = 0;
         for (Data.Example e : data) {
-            totalLoss += nn.loss(e.input, e.output);
+            totalLoss += nn.loss(e.input, e.output, Square.getInstance());
         }
 
         return totalLoss / data.length;

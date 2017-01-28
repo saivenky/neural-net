@@ -6,6 +6,9 @@ import java.util.Random;
  * Created by saivenky on 1/27/17.
  */
 public class Data {
+    public static abstract class Function {
+        abstract double f(double x);
+    }
     public static class Example {
         double[] input;
         double[] output;
@@ -20,8 +23,25 @@ public class Data {
             double a = uniform(-5, 5);
             double b = uniform(-5, 5);
             double product = a * b;
-            product = (product > 0) ? 1 : -1;
+
+            product = binary(product);
             return new Example(Vector.ize(a, b), Vector.ize(product));
+        }
+
+        private static double binary(double num) {
+            return (num < 0) ? 0 : 1;
+        }
+
+        private static double greaterThanFunction(Function function, double x, double y) {
+            return binary(y - function.f(x));
+        }
+
+        public static Example generateFunction(Function function) {
+            double a = uniform(-5, 5);
+            double b = uniform(-5, 5);
+            double label = greaterThanFunction(function, a, b);
+
+            return new Example(Vector.ize(a, b), Vector.ize(label));
         }
     }
 
@@ -35,6 +55,15 @@ public class Data {
         Example[] samples = new Example[sampleSize];
         for (int i = 0; i < sampleSize; i++) {
             samples[i] = Example.generateXor();
+        }
+
+        return samples;
+    }
+
+    public static Example[] generateFunction(Function function, int sampleSize) {
+        Example[] samples = new Example[sampleSize];
+        for (int i = 0; i < sampleSize; i++) {
+            samples[i] = Example.generateFunction(function);
         }
 
         return samples;
