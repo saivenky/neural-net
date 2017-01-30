@@ -28,6 +28,18 @@ public class Vector {
         }
     }
 
+    public static void multiplySelected(double[] a, double[] b, double[] product, int[] selected) {
+        if (selected == null) {
+            multiply(a, b, product);
+            return;
+        }
+
+        checkSizes(a, b, product);
+        for (int i : selected) {
+            product[i] = a[i] * b[i];
+        }
+    }
+
     public static void multiplyAndAdd(double[] a, double s, double[] result) {
         checkSizes(a, result);
         for(int i = 0; i < result.length; i++) {
@@ -57,6 +69,15 @@ public class Vector {
         return sum;
     }
 
+    public static double sumSelected(double[] vector, int[] selected) {
+        double sum = 0;
+        for(int i : selected) {
+            sum += vector[i];
+        }
+
+        return sum;
+    }
+
     public static void zero(double[] vector) {
         for (int i = 0; i < vector.length; i++) {
             vector[i] = 0;
@@ -70,7 +91,18 @@ public class Vector {
         }
     }
 
-    public static String str(double[] a) {
+    static String str(double[] a) {
+        StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        for(int i = 0; i < a.length; i++) {
+            builder.append(a[i]);
+            if ((i + 1) < a.length) builder.append(", ");
+        }
+        builder.append(']');
+        return builder.toString();
+    }
+
+    static String str(int[] a) {
         StringBuilder builder = new StringBuilder();
         builder.append('[');
         for(int i = 0; i < a.length; i++) {
@@ -84,6 +116,9 @@ public class Vector {
     public static void print(String label, double[] a) {
         System.out.printf("%s: %s\n", label, str(a));
     }
+    public static void print(String label, int[] a) {
+        System.out.printf("%s: %s\n", label, str(a));
+    }
 
     public static double sumSquared(double[] a) {
         double sumSquared = 0;
@@ -94,7 +129,59 @@ public class Vector {
         return sumSquared;
     }
 
+    public static void shuffle(int[] array) {
+        for(int i = 0; i < array.length; i++) {
+            swap(array, i, random.nextInt(array.length - i) + i);
+        }
+    }
+
+    private static void swap(int[] array, int a, int b) {
+        if(a == b) return;
+        int temp = array[a];
+        array[a] = array[b];
+        array[b] = temp;
+    }
+
+    public static int[] select(int[] selected, int length) {
+        int needed = selected.length;
+        int remaining = length;
+        for(int i = 0; i < length; i++) {
+            if(isSelected((double)needed/remaining)) {
+                selected[selected.length - needed--] = i;
+            }
+
+            remaining--;
+        }
+
+        return selected;
+    }
+
+    private static boolean isSelected(double selectionProbability) {
+        return random.nextDouble() < selectionProbability;
+    }
+
     public static double[] ize(double ... nums) {
         return nums;
+    }
+
+    public static void main(String[] args) {
+        Vector.initialize(System.currentTimeMillis());
+        int[] selected = new int[3];
+        for(int i = 0; i < 10; i++) {
+            select(selected, 10);
+            print("selected", selected);
+        }
+    }
+
+    public static void multiplyAndAddSelected(double[] a, double s, double[] result, int[] selected) {
+        if (selected == null) {
+            multiplyAndAdd(a, s, result);
+            return;
+        }
+
+        checkSizes(a, result);
+        for(int i : selected) {
+            result[i] += a[i] * s;
+        }
     }
 }

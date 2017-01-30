@@ -32,12 +32,33 @@ public class NeuralNetwork {
         this.costFunction = costFunction;
     }
 
+    public void setDropouts(double[] dropouts) {
+        for(int i = 0; i < layers.length - 1; i++) {
+            layers[i].setDropoutRate(dropouts[i]);
+        }
+    }
+
     public void run(double[] input) {
         double[] input1 = null;
+        double inputDropoutRate = 0;
         for (int i = 0; i < layers.length; i++) {
-            layers[i].run(input, input1);
+            layers[i].runScaled(input, input1, inputDropoutRate);
             input = layers[i].activation;
             input1 = layers[i].activation1;
+            inputDropoutRate = layers[i].dropoutRate;
+        }
+
+        predicted = input;
+    }
+
+    private void feedforward(double[] input) {
+        double[] input1 = null;
+        int[] inputNonDropout = null;
+        for (int i = 0; i < layers.length; i++) {
+            layers[i].run(input, input1, inputNonDropout);
+            input = layers[i].activation;
+            input1 = layers[i].activation1;
+            inputNonDropout = layers[i].nonDropout;
         }
 
         predicted = input;
@@ -67,9 +88,15 @@ public class NeuralNetwork {
     }
 
     void train(double[] input, double[] output) {
-        run(input);
+        feedforward(input);
         backpropagate(output);
         trainedExamples += 1;
+    }
+
+    void reselectDropouts() {
+        for (Layer l : layers) {
+            l.reselectDropout();
+        }
     }
 
     private double cost(double[] input, double[] output, CostFunction costFunction) {

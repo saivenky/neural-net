@@ -20,6 +20,7 @@ public class NeuralNetworkTrainer {
             neuralNetwork.train(e.input, e.output);
             if (j == batchEnd) {
                 neuralNetwork.update(learningRate);
+                neuralNetwork.reselectDropouts();
                 batchEnd += batchSize;
                 if (batchEnd >= trainData.length) batchEnd = trainData.length - 1;
             }
