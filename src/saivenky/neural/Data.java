@@ -10,8 +10,8 @@ public class Data {
         abstract double f(double x);
     }
     public static class Example {
-        double[] input;
-        double[] output;
+        public double[] input;
+        public double[] output;
 
 
         public Example(double input[], double[] output) {

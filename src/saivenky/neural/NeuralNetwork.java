@@ -5,6 +5,7 @@ import saivenky.neural.activation.Sigmoid;
 import saivenky.neural.cost.CostFunction;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.cost.Square;
+import saivenky.neural.neuron.NeuronInitializer;
 
 /**
  * Created by saivenky on 1/26/17.
@@ -14,14 +15,16 @@ public class NeuralNetwork {
 
     int trainedExamples;
 
-    double[] predicted;
+    public double[] predicted;
     CostFunction costFunction;
     Layer outputLayer;
 
-    public NeuralNetwork(int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction) {
+    public NeuralNetwork(
+            int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
         layers = new Layer[layerSizes.length - 1];
-        for(int i = 1; i < layerSizes.length; i++) {
-            layers[i - 1] = new Layer(layerSizes[i], layerSizes[i-1], activationFunction);
+        for (int i = 1; i < layerSizes.length; i++) {
+            layers[i - 1] = new Layer(
+                    layerSizes[i], layerSizes[i - 1], activationFunction, neuronInitializer);
         }
 
         outputLayer = layers[layers.length - 1];
@@ -30,43 +33,33 @@ public class NeuralNetwork {
     }
 
     public void run(double[] input) {
-        for(int i = 0; i < layers.length; i++) {
-            layers[i].run(input);
+        double[] input1 = null;
+        for (int i = 0; i < layers.length; i++) {
+            layers[i].run(input, input1);
             input = layers[i].activation;
+            input1 = layers[i].activation1;
         }
 
         predicted = input;
     }
 
-    private void backpropagate(double[] input, double[] output) {
+    private void backpropagate(double[] output) {
         double[] cost = costFunction.f1(predicted, output);
         double[] error = new double[cost.length];
         Vector.multiply(cost, outputLayer.activation1, error);
         outputLayer.error = error;
 
-        double[] previousLayerActivation;
-        double[] previousLayerActivation1;
-
-        for(int i = layers.length - 1; i >= 0; i--) {
-            if (i == 0) {
-                previousLayerActivation = input;
-                previousLayerActivation1 = null;
-            }
-            else {
-                previousLayerActivation = layers[i-1].activation;
-                previousLayerActivation1 = layers[i-1].activation1;
-            }
-
-            layers[i].backpropagate(previousLayerActivation, previousLayerActivation1);
+        for (int i = layers.length - 1; i >= 0; i--) {
+            layers[i].backpropagate();
 
             if (i != 0) {
-                layers[i-1].error = layers[i].previousLayerError;
+                layers[i - 1].error = layers[i].previousLayerError;
             }
         }
     }
 
     public void update(double learningRate) {
-        for(int i = 0; i < layers.length; i++) {
+        for (int i = 0; i < layers.length; i++) {
             layers[i].update(learningRate / trainedExamples);
         }
 
@@ -75,7 +68,7 @@ public class NeuralNetwork {
 
     public void train(double[] input, double[] output) {
         run(input);
-        backpropagate(input, output);
+        backpropagate(output);
         trainedExamples += 1;
     }
 
@@ -87,7 +80,21 @@ public class NeuralNetwork {
     public static void main(String[] args) {
         int[] layers = {2, 8, 2, 1};
         Vector.initialize(System.currentTimeMillis());
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance());
+        NeuronInitializer neuronInitializer = new NeuronInitializer(
+                new NeuronInitializer.Function() {
+                    @Override
+                    public double f() {
+                        return 0.1;
+                    }
+                },
+                new NeuronInitializer.Function() {
+                    @Override
+                    public double f() {
+                        return Math.random() - 0.5;
+                    }
+        });
+
+        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), neuronInitializer);
 
         Data.Function function = new Data.Function() {
             @Override
@@ -97,29 +104,22 @@ public class NeuralNetwork {
         };
 
         Data.Example[] trainData = Data.generateFunction(function, 250);
+        Data.Example[] testData = Data.generateFunction(function, 250);
+
+        NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(nn, trainData);
+
         int batchSize = 1;
         double learningRate = 0.3;
 
-        for(int i = 0; i < 200; i++) {
-            Data.shuffle(trainData);
-            int batchEnd = batchSize - 1;
-            for(int j = 0; j < trainData.length; j++) {
-                Data.Example e = trainData[j];
-                nn.train(e.input, e.output);
-                if (j == batchEnd) {
-                    nn.update(learningRate);
-                    batchEnd += batchSize;
-                    if (batchEnd >= trainData.length) batchEnd = trainData.length - 1;
-                }
-            }
+        for (int i = 0; i < 1000; i++) {
+            trainer.train(learningRate, batchSize);
             double trainLoss = totalLoss(nn, trainData);
             if (trainLoss < 0.001) {
-                System.out.printf("iter: %d\ntrainLoss: %s\n", i+1, trainLoss);
+                System.out.printf("iter: %d\ntrainLoss: %s\n", i + 1, trainLoss);
                 break;
             }
         }
 
-        Data.Example[] testData = Data.generateFunction(function, 250);
 
         //should be greater than 0.8
         System.out.println("\ntest data correct: " + check1d(nn, testData));
@@ -129,7 +129,7 @@ public class NeuralNetwork {
 
     private static double check1d(NeuralNetwork nn, Data.Example[] data) {
         double correct = 0;
-        for(Data.Example e : data) {
+        for (Data.Example e : data) {
             nn.run(e.input);
             if (nn.predicted.length != 1 && e.output.length != 1) {
                 throw new RuntimeException("Not 1-d data");

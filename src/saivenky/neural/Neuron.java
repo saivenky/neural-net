@@ -1,5 +1,7 @@
 package saivenky.neural;
 
+import saivenky.neural.neuron.NeuronInitializer;
+
 /**
  * Created by saivenky on 1/26/17.
  */
@@ -9,16 +11,22 @@ public class Neuron {
         return Vector.sum(weightedInput) + bias;
     }
 
+    public static void initializeWeights(NeuronInitializer neuronInitializer, double[] weights) {
+        for(int i = 0; i < weights.length; i++) {
+            weights[i] = neuronInitializer.createWeight();
+        }
+    }
+
     double[] weights;
     double bias;
     double[] weightError;
     double biasError;
 
-    public Neuron(int previousLayerNeurons) {
+    public Neuron(NeuronInitializer neuronInitializer, int previousLayerNeurons) {
         weights = new double[previousLayerNeurons];
         weightError = new double[previousLayerNeurons];
-        Vector.random(weights);
-        bias = 0.1;
+        initializeWeights(neuronInitializer, weights);
+        bias = neuronInitializer.createBias();
     }
 
     public double signal(double[] input, double[] weightedInput) {
