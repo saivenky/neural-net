@@ -13,11 +13,11 @@ import saivenky.neural.neuron.NeuronInitializer;
 public class NeuralNetwork {
     Layer[] layers;
 
-    int trainedExamples;
+    private int trainedExamples;
 
     public double[] predicted;
-    CostFunction costFunction;
-    Layer outputLayer;
+    private CostFunction costFunction;
+    private Layer outputLayer;
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
@@ -58,7 +58,7 @@ public class NeuralNetwork {
         }
     }
 
-    public void update(double learningRate) {
+    void update(double learningRate) {
         for (int i = 0; i < layers.length; i++) {
             layers[i].update(learningRate / trainedExamples);
         }
@@ -66,15 +66,15 @@ public class NeuralNetwork {
         trainedExamples = 0;
     }
 
-    public void train(double[] input, double[] output) {
+    void train(double[] input, double[] output) {
         run(input);
         backpropagate(output);
         trainedExamples += 1;
     }
 
-    public double loss(double[] input, double[] output, CostFunction lossFunction) {
+    private double cost(double[] input, double[] output, CostFunction costFunction) {
         run(input);
-        return lossFunction.f(predicted, output);
+        return costFunction.f(predicted, output);
     }
 
     public static void main(String[] args) {
@@ -120,7 +120,6 @@ public class NeuralNetwork {
             }
         }
 
-
         //should be greater than 0.8
         System.out.println("\ntest data correct: " + check1d(nn, testData));
         System.out.println("testLoss: " + totalLoss(nn, testData));
@@ -145,7 +144,7 @@ public class NeuralNetwork {
     private static double totalLoss(NeuralNetwork nn, Data.Example[] data) {
         double totalLoss = 0;
         for (Data.Example e : data) {
-            totalLoss += nn.loss(e.input, e.output, Square.getInstance());
+            totalLoss += nn.cost(e.input, e.output, Square.getInstance());
         }
 
         return totalLoss / data.length;

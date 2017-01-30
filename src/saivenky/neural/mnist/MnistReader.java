@@ -1,15 +1,15 @@
 package saivenky.neural.mnist;
 
-import saivenky.neural.*;
+import saivenky.neural.Data;
+import saivenky.neural.NeuralNetwork;
+import saivenky.neural.NeuralNetworkTrainer;
+import saivenky.neural.Vector;
 import saivenky.neural.activation.Sigmoid;
 import saivenky.neural.cost.CrossEntropy;
-import saivenky.neural.cost.Square;
 import saivenky.neural.image.DataUtils;
 import saivenky.neural.neuron.GaussianInitializer;
-import saivenky.neural.neuron.NeuronInitializer;
 
 import java.io.*;
-import java.util.Random;
 
 /**
  * Created by saivenky on 1/28/17.
@@ -31,16 +31,9 @@ public class MnistReader {
             throw new RuntimeException("Incorrect pixels when reading image");
         }
 
-        //int zeros = 0;
-        //int nonZeros = 0;
         for(int i = 0; i < totalBytes; i++) {
-            //System.out.print(rawBytes[i]+" ");
             imagePixels[i] = DataUtils.toPixel(rawBytes[i]);
-            //if (imagePixels[i] < 0.1) zeros += 1;
-            //else nonZeros += 1;
         }
-
-        //System.out.printf("zeros: %d, non-zeros: %d\n", zeros, nonZeros);
 
         return imagePixels;
     }
@@ -52,7 +45,6 @@ public class MnistReader {
         int rows = dis.readInt();
         int columns = dis.readInt();
 
-        //System.out.printf("magic number: 0x%08x\nnum images: %d\nrows: %d\ncols: %d\n", magicNum, numImages, rows, columns);
         double[][] images = new double[numImages][];
         for(int i = 0; i < numImages; i++) {
             images[i] = readImage(dis, rows, columns);
@@ -66,7 +58,6 @@ public class MnistReader {
         int magicNum = dis.readInt();
         int numLabels = dis.readInt();
 
-        //System.out.printf("magic number: 0x%08x\nnum labels: %d\n", magicNum, numLabels);
         int[] labels = new int[numLabels];
         for(int i = 0; i < numLabels; i++) {
             labels[i] = dis.readUnsignedByte();
@@ -75,7 +66,7 @@ public class MnistReader {
         return labels;
     }
 
-    public static double[] toOutput(int label) {
+    private static double[] toOutput(int label) {
         double[] output = new double[10];
         output[label] = 1;
         return output;
@@ -130,7 +121,7 @@ public class MnistReader {
         }
     }
 
-    public static double checkLabels(NeuralNetwork nn, Data.Example[] data, int[] labels) {
+    private static double checkLabels(NeuralNetwork nn, Data.Example[] data, int[] labels) {
         double correct = 0;
         if(data.length != labels.length) throw  new RuntimeException("Data and label length mismatch");
         for(int i = 0; i < data.length; i++) {
@@ -143,7 +134,7 @@ public class MnistReader {
         return correct / data.length;
     }
 
-    public static int getLabel(double[] predicted) {
+    private static int getLabel(double[] predicted) {
         double best = -1;
         int bestLabel = -1;
         for(int i = 0; i < predicted.length; i++) {

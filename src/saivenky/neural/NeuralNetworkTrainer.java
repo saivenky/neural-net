@@ -25,4 +25,10 @@ public class NeuralNetworkTrainer {
             }
         }
     }
+
+    public void train(int epochs, double learningRate, int batchSize) {
+        for (int i = 0; i < epochs; i++) {
+            train(learningRate, batchSize);
+        }
+    }
 }

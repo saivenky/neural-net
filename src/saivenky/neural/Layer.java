@@ -6,21 +6,21 @@ import saivenky.neural.neuron.NeuronInitializer;
 /**
  * Created by saivenky on 1/26/17.
  */
-public class Layer {
-    double[] weightedInput;
+class Layer {
+    private double[] weightedInput;
     Neuron[] neurons;
 
     double[] activation;
     double[] activation1;
-    ActivationFunction activationFunction;
+    private ActivationFunction activationFunction;
 
     double[] error;
     double[] previousLayerError;
 
-    double[] input;
-    double[] input1;
+    private double[] input;
+    private double[] input1;
 
-    public Layer(
+    Layer(
             int neuronCount, int previousLayerNeuronCount, ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
         weightedInput = new double[previousLayerNeuronCount];
         neurons = new Neuron[neuronCount];
@@ -38,7 +38,7 @@ public class Layer {
         }
     }
 
-    public void run(double[] input, double[] input1) {
+    void run(double[] input, double[] input1) {
         this.input = input;
         this.input1 = input1;
 
@@ -49,7 +49,7 @@ public class Layer {
         }
     }
 
-    public void backpropagate() {
+    void backpropagate() {
         if(input1 != null) {
             for (int i = 0; i < neurons.length; i++) {
                 Vector.multiplyAndAdd(neurons[i].weights, error[i], previousLayerError);
@@ -59,14 +59,14 @@ public class Layer {
         }
 
         for(int i = 0; i < neurons.length; i++) {
-            Vector.multiplyAndAdd(input, error[i], neurons[i].weightError);
             neurons[i].biasError += error[i];
+            Vector.multiplyAndAdd(input, error[i], neurons[i].weightError);
         }
     }
 
-    public void update(double rate) {
-        for(int i = 0; i < neurons.length; i++) {
-            neurons[i].update(rate);
+    void update(double rate) {
+        for (Neuron neuron : neurons) {
+            neuron.update(rate);
         }
         Vector.zero(previousLayerError);
     }
