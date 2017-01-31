@@ -3,6 +3,7 @@ package saivenky.neural;
 import org.junit.jupiter.api.Test;
 import saivenky.neural.activation.Sigmoid;
 import saivenky.neural.cost.Square;
+import saivenky.neural.neuron.NeuronProperties;
 import saivenky.neural.neuron.ZeroInitializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -123,61 +124,29 @@ public class NeuralNetworkTest {
     }
 
     @Test
-    void TwoNeurons() {
-        int[] layers = {1, 1, 1};
-        NeuralNetwork nn = new NeuralNetwork(
-                layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
-        nn.layers[0].neurons.get(0).properties.bias = 0.6;
-        nn.layers[0].neurons.get(0).properties.weights[0] = 0.9;
-        nn.layers[1].neurons.get(0).properties.bias = 0.7;
-        nn.layers[1].neurons.get(0).properties.weights[0] = 0.8;
-
-        Data.Example e = new Data.Example(Vector.ize(1), Vector.ize(0));
-        nn.train(e.input, e.output);
-
-        assertSimilar(0.8175, nn.layers[0].activation[0]);
-        assertSimilar(0.7948, nn.predicted[0]);
-        assertEquals(0.6, nn.layers[0].neurons.get(0).properties.bias);
-        assertEquals(0.9, nn.layers[0].neurons.get(0).properties.weights[0]);
-        assertEquals(0.7, nn.layers[1].neurons.get(0).properties.bias);
-        assertEquals(0.8, nn.layers[1].neurons.get(0).properties.weights[0]);
-
-        assertSimilar(0.1296, nn.layers[1].error[0]);
-        assertSimilar(0.1296, nn.layers[1].neurons.get(0).properties.biasCostGradient);
-        assertSimilar(0.1060, nn.layers[1].neurons.get(0).properties.weightCostGradient[0]);
-
-        assertSimilar(0.01546, nn.layers[0].error[0]);
-        assertSimilar(0.01546, nn.layers[0].neurons.get(0).properties.biasCostGradient);
-        assertSimilar(0.01546, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
-
-        nn.update(0.5);
-        assertSimilar(0.6352, nn.layers[1].neurons.get(0).properties.bias);
-        assertSimilar(0.7470, nn.layers[1].neurons.get(0).properties.weights[0]);
-        assertSimilar(0.5923, nn.layers[0].neurons.get(0).properties.bias);
-        assertSimilar(0.8923, nn.layers[0].neurons.get(0).properties.weights[0]);
-    }
-
-    @Test
     void TwoNeurons_MultipleUpdates() {
         int[] layers = {1, 1, 1};
         NeuralNetwork nn = new NeuralNetwork(
                 layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
         Data.Example e = new Data.Example(Vector.ize(1), Vector.ize(0));
 
+        double[][] biases = {{0.6}, {0.7}};
+        double[][][] weights = {{{0.9}}, {{0.8}}};
+
         for(int i = 0; i < 100; i++) {
-            nn.layers[0].neurons.get(0).properties.bias = 0.6;
-            nn.layers[0].neurons.get(0).properties.weights[0] = 0.9;
-            nn.layers[1].neurons.get(0).properties.bias = 0.7;
-            nn.layers[1].neurons.get(0).properties.weights[0] = 0.8;
+            setProperties(nn, biases, weights);
 
             nn.train(e.input, e.output);
 
             assertSimilar(0.8175, nn.layers[0].activation[0]);
             assertSimilar(0.7948, nn.predicted[0]);
-            assertEquals(0.6, nn.layers[0].neurons.get(0).properties.bias);
-            assertEquals(0.9, nn.layers[0].neurons.get(0).properties.weights[0]);
-            assertEquals(0.7, nn.layers[1].neurons.get(0).properties.bias);
-            assertEquals(0.8, nn.layers[1].neurons.get(0).properties.weights[0]);
+
+            checkProperties(nn, biases, weights, new ValueChecker() {
+                @Override
+                void areEqual(double expected, double actual, String message) {
+                    assertEquals(expected, actual, message);
+                }
+            });
 
             assertSimilar(0.1296, nn.layers[1].error[0]);
             assertSimilar(0.1296, nn.layers[1].neurons.get(0).properties.biasCostGradient);
@@ -188,10 +157,14 @@ public class NeuralNetworkTest {
             assertSimilar(0.01546, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
             nn.update(0.5);
-            assertSimilar(0.6352, nn.layers[1].neurons.get(0).properties.bias);
-            assertSimilar(0.7470, nn.layers[1].neurons.get(0).properties.weights[0]);
-            assertSimilar(0.5923, nn.layers[0].neurons.get(0).properties.bias);
-            assertSimilar(0.8923, nn.layers[0].neurons.get(0).properties.weights[0]);
+            double[][] expectedBiases = {{0.5923}, {0.6352}};
+            double[][][] expectedWeights = {{{0.8923}}, {{0.7470}}};
+            checkProperties(nn, expectedBiases, expectedWeights, new ValueChecker() {
+                @Override
+                void areEqual(double expected, double actual, String message) {
+                    assertEquals(expected, actual, PRECISION, message);
+                }
+            });
         }
     }
 
@@ -202,27 +175,26 @@ public class NeuralNetworkTest {
                 layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
         Data.Example e = new Data.Example(Vector.ize(1, 0.5), Vector.ize(0));
 
-        for(int i = 0; i < 100; i++) {
-            nn.layers[0].neurons.get(0).properties.bias = 0.9;
-            nn.layers[0].neurons.get(1).properties.bias = 0.3;
-            nn.layers[0].neurons.get(0).properties.weights = Vector.ize(0.8, 0.2);
-            nn.layers[0].neurons.get(1).properties.weights = Vector.ize(0.9, -0.4);
+        double[][] biases = {
+                {0.9, 0.3},
+                {-0.2}
+        };
 
-            nn.layers[1].neurons.get(0).properties.bias = -0.2;
-            nn.layers[1].neurons.get(0).properties.weights = Vector.ize(0.5, -0.7);
+        double[][][] weights = {
+                {{0.8, 0.2}, {0.9, -0.4}},
+                {{0.5, -0.7}}
+        };
+
+        for(int i = 0; i < 100; i++) {
+            setProperties(nn, biases, weights);
 
             nn.train(e.input, e.output);
-
-            assertEquals(0.9, nn.layers[0].neurons.get(0).properties.bias);
-            assertEquals(0.8, nn.layers[0].neurons.get(0).properties.weights[0]);
-            assertEquals(0.2, nn.layers[0].neurons.get(0).properties.weights[1]);
-            assertEquals(0.3, nn.layers[0].neurons.get(1).properties.bias);
-            assertEquals(0.9, nn.layers[0].neurons.get(1).properties.weights[0]);
-            assertEquals(-0.4, nn.layers[0].neurons.get(1).properties.weights[1]);
-
-            assertEquals(-0.2, nn.layers[1].neurons.get(0).properties.bias);
-            assertEquals(0.5, nn.layers[1].neurons.get(0).properties.weights[0]);
-            assertEquals(-0.7, nn.layers[1].neurons.get(0).properties.weights[1]);
+            checkProperties(nn, biases, weights, new ValueChecker() {
+                @Override
+                void areEqual(double expected, double actual, String message) {
+                    assertEquals(expected, actual, message);
+                }
+            });
 
             assertSimilar(0.8581, nn.layers[0].activation[0]);
             assertSimilar(0.73106, nn.layers[0].activation[1]);
@@ -234,16 +206,22 @@ public class NeuralNetworkTest {
 
             nn.update(0.5);
 
-            assertSimilar(0.8968, nn.layers[0].neurons.get(0).properties.bias);
-            assertSimilar(0.7968, nn.layers[0].neurons.get(0).properties.weights[0]);
-            assertSimilar(0.1984, nn.layers[0].neurons.get(0).properties.weights[1]);
-            assertSimilar(0.3072, nn.layers[0].neurons.get(1).properties.bias);
-            assertSimilar(0.9072, nn.layers[0].neurons.get(1).properties.weights[0]);
-            assertSimilar(-0.3964, nn.layers[0].neurons.get(1).properties.weights[1]);
+            double[][] expectedBiases = {
+                    {0.8968, 0.3072},
+                    {-0.2527}
+            };
 
-            assertSimilar(-0.2527, nn.layers[1].neurons.get(0).properties.bias);
-            assertSimilar(0.4548, nn.layers[1].neurons.get(0).properties.weights[0]);
-            assertSimilar(-0.7385, nn.layers[1].neurons.get(0).properties.weights[1]);
+            double[][][] expectedWeights = {
+                    {{0.7968, 0.1984}, {0.9072, -0.3964}},
+                    {{0.4548, -0.7385}}
+            };
+
+            checkProperties(nn, expectedBiases, expectedWeights, new ValueChecker() {
+                @Override
+                void areEqual(double expected, double actual, String message) {
+                    assertEquals(expected, actual, PRECISION, message);
+                }
+            });
         }
     }
 
@@ -254,94 +232,92 @@ public class NeuralNetworkTest {
                 layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
         Data.Example e = new Data.Example(Vector.ize(0, 1), Vector.ize(0.8));
 
+        double[][] biases = {
+                {-0.6, 0.3, 0.1},
+                {0.9, -0.4},
+                {0.5}
+        };
+
+        double[][][] weights = {
+                {{0.8, 0.7}, {-0.8, 0.4}, {-0.9, -0.3}},
+                {{-0.4, 0.7, 0.7}, {0.6, -0.3, -0.2}},
+                {{-0.3, 0.5}}
+        };
+
         //initialize
-        nn.layers[0].neurons.get(0).properties.bias = -0.6;
-        nn.layers[0].neurons.get(1).properties.bias = 0.3;
-        nn.layers[0].neurons.get(2).properties.bias = 0.1;
-
-        nn.layers[1].neurons.get(0).properties.bias = 0.9;
-        nn.layers[1].neurons.get(1).properties.bias = -0.4;
-
-        nn.layers[2].neurons.get(0).properties.bias = 0.5;
-
-        nn.layers[0].neurons.get(0).properties.weights[0] = 0.8;
-        nn.layers[0].neurons.get(0).properties.weights[1] = 0.7;
-        nn.layers[0].neurons.get(1).properties.weights[0] = -0.8;
-        nn.layers[0].neurons.get(1).properties.weights[1] = 0.4;
-        nn.layers[0].neurons.get(2).properties.weights[0] = -0.9;
-        nn.layers[0].neurons.get(2).properties.weights[1] = -0.3;
-
-        nn.layers[1].neurons.get(0).properties.weights[0] = -0.4;
-        nn.layers[1].neurons.get(0).properties.weights[1] = 0.7;
-        nn.layers[1].neurons.get(0).properties.weights[2] = 0.7;
-        nn.layers[1].neurons.get(1).properties.weights[0] = 0.6;
-        nn.layers[1].neurons.get(1).properties.weights[1] = -0.3;
-        nn.layers[1].neurons.get(1).properties.weights[2] = -0.2;
-
-        nn.layers[2].neurons.get(0).properties.weights[0] = -0.3;
-        nn.layers[2].neurons.get(0).properties.weights[1] = 0.5;
+        setProperties(nn, biases, weights);
 
         //train and check no changes
         nn.train(e.input, e.output);
-
-        assertEquals(-0.6, nn.layers[0].neurons.get(0).properties.bias);
-        assertEquals(0.3, nn.layers[0].neurons.get(1).properties.bias);
-        assertEquals(0.1, nn.layers[0].neurons.get(2).properties.bias);
-
-        assertEquals(0.9, nn.layers[1].neurons.get(0).properties.bias);
-        assertEquals(-0.4, nn.layers[1].neurons.get(1).properties.bias);
-
-        assertEquals(0.5, nn.layers[2].neurons.get(0).properties.bias);
-
-        assertEquals(0.8, nn.layers[0].neurons.get(0).properties.weights[0]);
-        assertEquals(0.7, nn.layers[0].neurons.get(0).properties.weights[1]);
-        assertEquals(-0.8, nn.layers[0].neurons.get(1).properties.weights[0]);
-        assertEquals(0.4, nn.layers[0].neurons.get(1).properties.weights[1]);
-        assertEquals(-0.9, nn.layers[0].neurons.get(2).properties.weights[0]);
-        assertEquals(-0.3, nn.layers[0].neurons.get(2).properties.weights[1]);
-
-        assertEquals(-0.4, nn.layers[1].neurons.get(0).properties.weights[0]);
-        assertEquals(0.7, nn.layers[1].neurons.get(0).properties.weights[1]);
-        assertEquals(0.7, nn.layers[1].neurons.get(0).properties.weights[2]);
-        assertEquals(0.6, nn.layers[1].neurons.get(1).properties.weights[0]);
-        assertEquals(-0.3, nn.layers[1].neurons.get(1).properties.weights[1]);
-        assertEquals(-0.2, nn.layers[1].neurons.get(1).properties.weights[2]);
-
-        assertEquals(-0.3, nn.layers[2].neurons.get(0).properties.weights[0]);
-        assertEquals(0.5, nn.layers[2].neurons.get(0).properties.weights[1]);
+        checkProperties(nn, biases, weights, new ValueChecker() {
+            @Override
+            void areEqual(double expected, double actual, String message) {
+                assertEquals(expected, actual, message);
+            }
+        });
 
         //feedforward
         assertVerySimilar(0.6129095, nn.predicted[0]);
 
         //update and check
         nn.update(0.7);
-        assertVerySimilar(-0.59929781, nn.layers[0].neurons.get(0).properties.bias);
-        assertVerySimilar(0.29953107, nn.layers[0].neurons.get(1).properties.bias);
-        assertVerySimilar(0.09956932, nn.layers[0].neurons.get(2).properties.bias);
+        double[][] expectedBiases = {
+                {-0.59929781, 0.29953107, 0.09956932},
+                {0.89858573, -0.39624985},
+                {0.53107124}
+        };
 
-        assertVerySimilar(0.89858573, nn.layers[1].neurons.get(0).properties.bias);
-        assertVerySimilar(-0.39624985, nn.layers[1].neurons.get(1).properties.bias);
+        double[][][] expectedWeights = {
+                {{0.8, 0.70070219}, {-0.8, 0.39953107}, {-0.9, -0.30043068}},
+                {{-0.40074246, 0.699055, 0.69936334}, {0.60196875, -0.2974942, -0.19831181}},
+                {{-0.27472382, 0.51265259}}
+        };
 
-        assertVerySimilar(0.53107124, nn.layers[2].neurons.get(0).properties.bias);
+        checkProperties(nn, expectedBiases, expectedWeights, new ValueChecker() {
+            @Override
+            void areEqual(double expected, double actual, String message) {
+                assertEquals(expected, actual, VERY_PRECISION, message);
 
-        assertVerySimilar(0.8, nn.layers[0].neurons.get(0).properties.weights[0]);
-        assertVerySimilar(0.70070219, nn.layers[0].neurons.get(0).properties.weights[1]);
-        assertVerySimilar(-0.8, nn.layers[0].neurons.get(1).properties.weights[0]);
-        assertVerySimilar(0.39953107, nn.layers[0].neurons.get(1).properties.weights[1]);
-        assertVerySimilar(-0.9, nn.layers[0].neurons.get(2).properties.weights[0]);
-        assertVerySimilar(-0.30043068, nn.layers[0].neurons.get(2).properties.weights[1]);
-
-        assertVerySimilar(-0.40074246, nn.layers[1].neurons.get(0).properties.weights[0]);
-        assertVerySimilar(0.699055, nn.layers[1].neurons.get(0).properties.weights[1]);
-        assertVerySimilar(0.69936334, nn.layers[1].neurons.get(0).properties.weights[2]);
-        assertVerySimilar(0.60196875, nn.layers[1].neurons.get(1).properties.weights[0]);
-        assertVerySimilar(-0.2974942, nn.layers[1].neurons.get(1).properties.weights[1]);
-        assertVerySimilar(-0.19831181, nn.layers[1].neurons.get(1).properties.weights[2]);
-
-        assertVerySimilar(-0.27472382, nn.layers[2].neurons.get(0).properties.weights[0]);
-        assertVerySimilar(0.51265259, nn.layers[2].neurons.get(0).properties.weights[1]);
+            }
+        });
     }
 
+    private void setProperties(NeuralNetwork nn, double[][] biases, double[][][] weights) {
+        for(int i = nn.layers.length - 1; i >= 0 ; i--) {
+            Layer layer = nn.layers[i];
+            double[] layerBiases = biases[i];
+            double[][] layerWeights = weights[i];
+            for(int j = 0; j < layer.neurons.size(); j++) {
+                NeuronProperties properties = layer.neurons.get(j).properties;
+                properties.bias = layerBiases[j];
 
+                double[] neuronWeights = layerWeights[j];
+                System.arraycopy(neuronWeights, 0, properties.weights, 0, properties.weights.length);
+            }
+        }
+    }
 
+    private void checkProperties(NeuralNetwork nn, double[][] biases, double[][][] weights, ValueChecker valueChecker) {
+        for(int i = nn.layers.length - 1; i >= 0 ; i--) {
+            Layer layer = nn.layers[i];
+            double[] expectedLayerBiases = biases[i];
+            double[][] expectedLayerWeights = weights[i];
+            for(int j = 0; j < layer.neurons.size(); j++) {
+                String message = String.format("layer %d, neuron %d, ", i, j);
+                NeuronProperties properties = layer.neurons.get(j).properties;
+                String biasMessage = message + "bias";
+                valueChecker.areEqual(expectedLayerBiases[j], properties.bias, biasMessage);
+
+                double[] expectedNeuronWeights = expectedLayerWeights[j];
+                for (int k = 0; k < properties.weights.length; k++) {
+                    String weightMessage = message + String.format("weights[%d]", k);
+                    valueChecker.areEqual(expectedNeuronWeights[k], properties.weights[k], weightMessage);
+                }
+            }
+        }
+    }
+
+    private static abstract class ValueChecker {
+        abstract void areEqual(double expected, double actual, String message);
+    }
 }
