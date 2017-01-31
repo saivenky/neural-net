@@ -8,7 +8,7 @@ import saivenky.neural.neuron.NeuronInitializer;
  */
 class Layer {
     private double[] weightedInput;
-    Neuron[] neurons;
+    NeuronSet neurons;
 
     double[] activation;
     double[] activation1;
@@ -27,7 +27,7 @@ class Layer {
     Layer(
             int neuronCount, int previousLayerNeuronCount, ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
         weightedInput = new double[previousLayerNeuronCount];
-        neurons = new Neuron[neuronCount];
+        neurons = new NeuronSet(new Neuron[neuronCount]);
         initializeNeurons(neuronInitializer, previousLayerNeuronCount);
         activation = new double[neuronCount];
         activation1 = new double[neuronCount];
@@ -39,19 +39,20 @@ class Layer {
 
     public void setDropoutRate(double dropoutRate) {
         this.dropoutRate = dropoutRate;
-        int nonDropoutLength = neurons.length - (int)(neurons.length * dropoutRate);
+        int nonDropoutLength = neurons.size() - (int)(neurons.size() * dropoutRate);
         nonDropout = new int[nonDropoutLength];
-        Vector.select(nonDropout, neurons.length);
+        Vector.select(nonDropout, neurons.size());
+        neurons.select(nonDropout);
     }
 
     void reselectDropout() {
-        Vector.select(nonDropout, neurons.length);
+        Vector.select(nonDropout, neurons.size());
     }
 
     private void initializeNeurons(
             NeuronInitializer neuronInitializer, int previousLayerNeuronCount) {
-        for(int i = 0; i < neurons.length; i++) {
-            neurons[i] = new Neuron(neuronInitializer, previousLayerNeuronCount);
+        for(int i = 0; i < neurons.size(); i++) {
+            neurons.set(i, new Neuron(neuronInitializer, previousLayerNeuronCount));
         }
     }
 
@@ -60,11 +61,14 @@ class Layer {
         this.input1 = input1;
         this.inputNonDropout = null;
 
-        for(int i : nonDropout) {
-            double signal = neurons[i].signal(input, weightedInput);
-            activation[i] = activationFunction.f(signal);
-            activation1[i] = activationFunction.f1(signal);
-        }
+        neurons.forSelected(new NeuronSet.NeuronAction() {
+            @Override
+            void f(Neuron neuron, int i) {
+                double signal = neuron.signal(input, weightedInput);
+                activation[i] = activationFunction.f(signal);
+                activation1[i] = activationFunction.f1(signal);
+            }
+        });
     }
 
     void run(double[] input, double[] input1, int[] inputNonDropout) {
@@ -77,11 +81,14 @@ class Layer {
         this.input1 = input1;
         this.inputNonDropout = inputNonDropout;
 
-        for(int i : nonDropout) {
-            double signal = neurons[i].signalForSelected(input, weightedInput, inputNonDropout);
-            activation[i] = activationFunction.f(signal);
-            activation1[i] = activationFunction.f1(signal);
-        }
+        neurons.forSelected(new NeuronSet.NeuronAction() {
+            @Override
+            void f(Neuron neuron, int i) {
+                double signal = neuron.signalForSelected(input, weightedInput, inputNonDropout);
+                activation[i] = activationFunction.f(signal);
+                activation1[i] = activationFunction.f1(signal);
+            }
+        });
     }
 
     void runScaled(double[] input, double[] input1, double inputDropoutRate) {
@@ -89,33 +96,44 @@ class Layer {
         this.input1 = input1;
         double scale = signalScaleFromDropout(inputDropoutRate);
 
-        for(int i = 0; i < neurons.length; i++) {
-            double signal = neurons[i].signalScaled(input, weightedInput, scale);
-            activation[i] = activationFunction.f(signal);
-            activation1[i] = activationFunction.f1(signal);
-        }
+        neurons.forAll(new NeuronSet.NeuronAction() {
+            @Override
+            void f(Neuron neuron, int i) {
+                double signal = neuron.signalScaled(input, weightedInput, scale);
+                activation[i] = activationFunction.f(signal);
+                activation1[i] = activationFunction.f1(signal);
+            }
+        });
     }
 
     void backpropagate() {
         if(input1 != null) {
-            for(int i : nonDropout) {
-                Vector.multiplyAndAddSelected(neurons[i].weights, error[i], previousLayerError, inputNonDropout);
-            }
+            neurons.forSelected(new NeuronSet.NeuronAction() {
+                @Override
+                void f(Neuron neuron, int i) {
+                    Vector.multiplyAndAddSelected(neuron.properties.weights, error[i], previousLayerError, inputNonDropout);
+                }
+            });
 
             Vector.multiplySelected(previousLayerError, input1, previousLayerError, inputNonDropout);
         }
 
-        for(int i : nonDropout) {
-            neurons[i].biasError += error[i];
-            Vector.multiplyAndAddSelected(input, error[i], neurons[i].weightError, inputNonDropout);
-        }
+        neurons.forSelected(new NeuronSet.NeuronAction() {
+            @Override
+            void f(Neuron neuron, int i) {
+                neuron.properties.biasCostGradient += error[i];
+                Vector.multiplyAndAddSelected(input, error[i], neuron.properties.weightCostGradient, inputNonDropout);
+            }
+        });
     }
 
     void update(double rate) {
-        for(int i : nonDropout) {
-            Neuron neuron = neurons[i];
-            neuron.update(rate);
-        }
+        neurons.forSelected(new NeuronSet.NeuronAction() {
+            @Override
+            void f(Neuron neuron, int i) {
+                neuron.update(rate);
+            }
+        });
         Vector.zero(previousLayerError);
     }
 
