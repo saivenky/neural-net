@@ -8,21 +8,19 @@ import saivenky.neural.neuron.NeuronProperties;
  */
 public class Neuron {
     final NeuronProperties properties;
+    final NeuronSet inputNeurons;
 
-    Neuron(NeuronInitializer neuronInitializer, int previousLayerNeurons) {
+    Neuron(NeuronInitializer neuronInitializer, NeuronSet inputNeurons, int previousLayerNeurons) {
+        this.inputNeurons = inputNeurons;
         properties = new NeuronProperties(neuronInitializer, previousLayerNeurons);
     }
 
-    double signal(double[] input, double[] weightedInput) {
-        return properties.affine(input, weightedInput);
+    double signalForSelected() {
+        return properties.affineForSelected(inputNeurons.activation, inputNeurons.selected);
     }
 
-    double signalForSelected(double[] input, double[] weightedInput, int[] selected) {
-        return properties.affineForSelected(input, weightedInput, selected);
-    }
-
-    double signalScaled(double[] input, double[] weightedInput, double scale) {
-        return properties.affineScaled(input, weightedInput, scale);
+    double signalScaled(double scale) {
+        return properties.affineScaled(inputNeurons.activation, scale);
     }
 
     void update(double rate) {

@@ -18,13 +18,17 @@ public class NeuralNetwork {
     public double[] predicted;
     private CostFunction costFunction;
     private Layer outputLayer;
+    private InputNeuronSet inputNeurons;
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
         layers = new Layer[layerSizes.length - 1];
+        inputNeurons = new InputNeuronSet();
+        NeuronSet previousLayerNeurons = inputNeurons;
         for (int i = 1; i < layerSizes.length; i++) {
-            layers[i - 1] = new Layer(
-                    layerSizes[i], layerSizes[i - 1], activationFunction, neuronInitializer);
+            layers[i - 1] = new StandardLayer(
+                    layerSizes[i], previousLayerNeurons, layerSizes[i - 1], activationFunction, neuronInitializer);
+            previousLayerNeurons = layers[i-1].neurons;
         }
 
         outputLayer = layers[layers.length - 1];
@@ -39,43 +43,33 @@ public class NeuralNetwork {
     }
 
     public void run(double[] input) {
-        double[] input1 = null;
+        inputNeurons.setInput(input);
         double inputDropoutRate = 0;
         for (int i = 0; i < layers.length; i++) {
-            layers[i].runScaled(input, input1, inputDropoutRate);
-            input = layers[i].activation;
-            input1 = layers[i].activation1;
+            layers[i].runScaled(inputDropoutRate);
             inputDropoutRate = layers[i].dropoutRate;
         }
 
-        predicted = input;
+        predicted = outputLayer.neurons.activation;
     }
 
     private void feedforward(double[] input) {
-        double[] input1 = null;
-        int[] inputNonDropout = null;
+        inputNeurons.setInput(input);
         for (int i = 0; i < layers.length; i++) {
-            layers[i].run(input, input1, inputNonDropout);
-            input = layers[i].activation;
-            input1 = layers[i].activation1;
-            inputNonDropout = layers[i].nonDropout;
+            layers[i].run();
         }
 
-        predicted = input;
+        predicted = outputLayer.neurons.activation;
     }
 
     private void backpropagate(double[] output) {
         double[] cost = costFunction.f1(predicted, output);
-        double[] error = new double[cost.length];
-        Vector.multiply(cost, outputLayer.activation1, error);
-        outputLayer.error = error;
+        outputLayer.neurons.clearSignalCostGradient();
+        outputLayer.neurons.addSignalCostGradient(cost, 1);
+        outputLayer.neurons.completeSignalCostGradient();
 
         for (int i = layers.length - 1; i >= 0; i--) {
             layers[i].backpropagate();
-
-            if (i != 0) {
-                layers[i - 1].error = layers[i].previousLayerError;
-            }
         }
     }
 

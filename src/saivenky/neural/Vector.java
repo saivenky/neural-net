@@ -1,5 +1,6 @@
 package saivenky.neural;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -15,7 +16,7 @@ public class Vector {
     private static void checkSizes(double[] ... arrays) {
         int length = arrays[0].length;
         for(double[] a : arrays) {
-            if (a.length != length) {
+            if (a == null || a.length != length) {
                 throw new RuntimeException("Vector length mismatch");
             }
         }
@@ -44,19 +45,6 @@ public class Vector {
         checkSizes(a, result);
         for(int i = 0; i < result.length; i++) {
             result[i] += a[i] * s;
-        }
-    }
-
-    public static void add(double[] a, double[] b, double[] sum) {
-        checkSizes(a, b, sum);
-        for(int i = 0; i < sum.length; i++) {
-            sum[i] = a[i] + b[i];
-        }
-    }
-
-    public static void random(double[] a) {
-        for(int i = 0; i < a.length; i++) {
-            a[i] = random.nextDouble() - 0.5;
         }
     }
 
@@ -129,19 +117,6 @@ public class Vector {
         return sumSquared;
     }
 
-    public static void shuffle(int[] array) {
-        for(int i = 0; i < array.length; i++) {
-            swap(array, i, random.nextInt(array.length - i) + i);
-        }
-    }
-
-    private static void swap(int[] array, int a, int b) {
-        if(a == b) return;
-        int temp = array[a];
-        array[a] = array[b];
-        array[b] = temp;
-    }
-
     public static int[] select(int[] selected, int length) {
         int needed = selected.length;
         int remaining = length;
@@ -183,5 +158,14 @@ public class Vector {
         for(int i : selected) {
             result[i] += a[i] * s;
         }
+    }
+
+    private static HashMap<Integer, double[]> temporaryVectors = new HashMap<>();
+    public static double[] getTemporaryVector(int length) {
+        if(!temporaryVectors.containsKey(length)) {
+            temporaryVectors.put(length, new double[length]);
+        }
+
+        return temporaryVectors.get(length);
     }
 }
