@@ -1,9 +1,8 @@
 package saivenky.neural.mnist;
 
-import saivenky.neural.Data;
-import saivenky.neural.NeuralNetwork;
-import saivenky.neural.NeuralNetworkTrainer;
+import saivenky.neural.*;
 import saivenky.neural.activation.Sigmoid;
+import saivenky.neural.activation.pooling.MaxPool;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.DataUtils;
 import saivenky.neural.image.ImageWriter;
@@ -104,26 +103,86 @@ public class MnistReader {
             testLabels[i] = getLabel(testData[i].output);
         }
 
-        int[] layers = {28 * 28, 120, 10};
-        double[] dropouts = {0.25};
-
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), new GaussianInitializer());
-        nn.setDropouts(dropouts);
+        System.out.print("Initializing network");
+        NeuralNetwork nn = getStandardNeuralNetwork();
 
         NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(nn, trainingData);
 
         int batchSize = 60;
-        double learningRate = 3.0;
+        double learningRate = 0.3;
         int epochs = 15;
 
         for(int i = 0; i < epochs; i++) {
-            trainer.train(learningRate, batchSize);
+            System.out.println("Epoch " + i);
+            trainer.train(learningRate, batchSize, new NeuralNetworkTrainer.Evaluator() {
+                @Override
+                public void f(int batchNumber) {
+                    //System.out.printf("Batch %d - test data correct: %s\n", batchNumber, checkLabels(nn, testData, testLabels, 100));
+                }
+            });
+            System.out.println("test data correct: " + checkLabels(nn, testData, testLabels, testData.length));
             //System.out.println("train data correct: " + checkLabels(nn, trainingData));
-            System.out.println("test data correct: " + checkLabels(nn, testData, testLabels));
+
         }
 
         File outputDir = new File("/home/saivenky/mnist-testing-result");
         System.out.println("test data correct: " + checkLabelsAndWriteIncorrect(nn, testData, testLabels, outputDir));
+    }
+
+    private static final int IMAGE_WIDTH = 28;
+    private static final int IMAGE_HEIGHT = 28;
+
+    private static NeuralNetwork getStandardNeuralNetwork() {
+        int[] layers = {IMAGE_WIDTH * IMAGE_HEIGHT, 120, 10};
+        double[] dropouts = {0.25};
+
+        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), new GaussianInitializer());
+        nn.setDropouts(dropouts);
+        System.out.println("...");
+
+        return nn;
+    }
+
+    private static NeuralNetwork getConvolutionNeuralNetwork() {
+        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT);
+        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(inputLayer.neurons, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+                Sigmoid.getInstance(), 20, 8, 8, spatial2DStructure);
+        System.out.print(".");
+
+        PoolingLayer poolingLayer = new PoolingLayer(MaxPool.getInstance(), 2, 2, convolutionLayer);
+        System.out.print(".");
+
+        StandardLayer standardLayer = new StandardLayer(
+                30, poolingLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+        StandardLayer outputLayer = new StandardLayer(
+                10, standardLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+
+        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, poolingLayer, standardLayer, outputLayer);
+        System.out.println(".");
+
+        return nn;
+    }
+
+    private static NeuralNetwork getSmallConvolutionNeuralNetwork() {
+        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT);
+        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(inputLayer.neurons, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+                Sigmoid.getInstance(), 4, 14, 14, spatial2DStructure);
+        System.out.print(".");
+        System.out.print(".");
+
+        StandardLayer standardLayer = new StandardLayer(
+                30, convolutionLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+        StandardLayer outputLayer = new StandardLayer(
+                10, standardLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+
+        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, standardLayer, outputLayer);
+        System.out.println(".");
+
+        return nn;
     }
 
     private static double checkLabelsAndWriteIncorrect(NeuralNetwork nn, Data.Example[] data, int[] labels, File outputDir) {
@@ -158,17 +217,17 @@ public class MnistReader {
         return correct / data.length;
     }
 
-    private static double checkLabels(NeuralNetwork nn, Data.Example[] data, int[] labels) {
+    private static double checkLabels(NeuralNetwork nn, Data.Example[] data, int[] labels, int lengthToCheck) {
         double correct = 0;
         if(data.length != labels.length) throw  new RuntimeException("Data and label length mismatch");
-        for(int i = 0; i < data.length; i++) {
+        for(int i = 0; i < lengthToCheck; i++) {
             Data.Example e = data[i];
             nn.run(e.input);
             int predicted = getLabel(nn.predicted);
             if (predicted == labels[i]) correct += 1;
         }
 
-        return correct / data.length;
+        return correct / lengthToCheck;
     }
 
     private static double checkLabels(NeuralNetwork nn, Data.Example[] data) {

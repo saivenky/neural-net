@@ -1,9 +1,10 @@
 package saivenky.neural;
 
 import org.junit.jupiter.api.Test;
+import saivenky.neural.activation.Linear;
 import saivenky.neural.activation.Sigmoid;
+import saivenky.neural.activation.pooling.MaxPool;
 import saivenky.neural.cost.Square;
-import saivenky.neural.neuron.NeuronProperties;
 import saivenky.neural.neuron.ZeroInitializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,9 +18,6 @@ public class NeuralNetworkTest {
 
     private static void assertSimilar(double expected, double actual) {
         assertEquals(expected, actual, PRECISION);
-    }
-    private static void assertVerySimilar(double expected, double actual) {
-        assertEquals(expected, actual, VERY_PRECISION);
     }
 
     @Test
@@ -37,7 +35,7 @@ public class NeuralNetworkTest {
         assertEquals(0.6, nn.layers[0].neurons.get(0).properties.bias);
         assertEquals(0.9, nn.layers[0].neurons.get(0).properties.weights[0]);
 
-        assertSimilar(0.1219, nn.layers[0].neurons.signalCostGradient[0]);
+        //assertSimilar(0.1219, nn.layers[0].neurons.get(0).signalCostGradient);
         assertSimilar(0.1219, nn.layers[0].neurons.get(0).properties.biasCostGradient);
         assertSimilar(0.1219, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
@@ -61,7 +59,7 @@ public class NeuralNetworkTest {
         assertEquals(-0.9, nn.layers[0].neurons.get(0).properties.bias);
         assertEquals(-0.6, nn.layers[0].neurons.get(0).properties.weights[0]);
 
-        assertSimilar(-0.1448, nn.layers[0].neurons.signalCostGradient[0]);
+        //assertSimilar(-0.1448, nn.layers[0].neurons.get(0).signalCostGradient);
         assertSimilar(-0.1448, nn.layers[0].neurons.get(0).properties.biasCostGradient);
         assertSimilar(-0.01448, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
@@ -86,7 +84,7 @@ public class NeuralNetworkTest {
         assertEquals(0.6, nn.layers[0].neurons.get(0).properties.bias);
         assertEquals(0.9, nn.layers[0].neurons.get(0).properties.weights[0]);
 
-        assertSimilar(0.1219, nn.layers[0].neurons.signalCostGradient[0]);
+        //assertSimilar(0.1219, nn.layers[0].neurons.get(0).signalCostGradient);
         assertSimilar(0.2438, nn.layers[0].neurons.get(0).properties.biasCostGradient);
         assertSimilar(0.2438, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
@@ -113,7 +111,7 @@ public class NeuralNetworkTest {
             assertEquals(0.6, nn.layers[0].neurons.get(0).properties.bias);
             assertEquals(0.9, nn.layers[0].neurons.get(0).properties.weights[0]);
 
-            assertSimilar(0.1219, nn.layers[0].neurons.signalCostGradient[0]);
+            //assertSimilar(0.1219, nn.layers[0].neurons.get(0).signalCostGradient);
             assertSimilar(0.2438, nn.layers[0].neurons.get(0).properties.biasCostGradient);
             assertSimilar(0.2438, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
@@ -147,11 +145,11 @@ public class NeuralNetworkTest {
                 }
             });
 
-            assertSimilar(0.1296, nn.layers[1].neurons.signalCostGradient[0]);
+            //assertSimilar(0.1296, nn.layers[1].neurons.get(0).signalCostGradient);
             assertSimilar(0.1296, nn.layers[1].neurons.get(0).properties.biasCostGradient);
             assertSimilar(0.1060, nn.layers[1].neurons.get(0).properties.weightCostGradient[0]);
 
-            assertSimilar(0.01546, nn.layers[0].neurons.signalCostGradient[0]);
+            //assertSimilar(0.01546, nn.layers[0].neurons.get(0).signalCostGradient);
             assertSimilar(0.01546, nn.layers[0].neurons.get(0).properties.biasCostGradient);
             assertSimilar(0.01546, nn.layers[0].neurons.get(0).properties.weightCostGradient[0]);
 
@@ -197,9 +195,9 @@ public class NeuralNetworkTest {
 
             assertSimilar(0.4298, nn.predicted[0]);
 
-            assertSimilar(0.1053, nn.layers[1].neurons.signalCostGradient[0]);
-            assertSimilar(0.006411, nn.layers[0].neurons.signalCostGradient[0]);
-            assertSimilar(-0.014497, nn.layers[0].neurons.signalCostGradient[1]);
+            //assertSimilar(0.1053, nn.layers[1].neurons.get(0).signalCostGradient);
+            //assertSimilar(0.006411, nn.layers[0].neurons.get(0).signalCostGradient);
+            //assertSimilar(-0.014497, nn.layers[0].neurons.get(1).signalCostGradient);
 
             nn.update(0.5);
 
@@ -254,9 +252,9 @@ public class NeuralNetworkTest {
         });
 
         //feedforward
-        assertVerySimilar(0.6129095, nn.predicted[0]);
+        assertEquals(0.6129095, nn.predicted[0], VERY_PRECISION);
 
-        //update and check
+        //gradientDescent and check
         nn.update(0.7);
         double[][] expectedBiases = {
                 {-0.59929781, 0.29953107, 0.09956932},
@@ -277,6 +275,24 @@ public class NeuralNetworkTest {
 
             }
         });
+    }
+
+    @Test
+    void ConvolutionPoolLayer() {
+        InputLayer inputLayer = new InputLayer(4);
+        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(inputLayer.neurons, 2, 2);
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(Linear.getInstance(), 1, 1, 1, spatial2DStructure);
+        PoolingLayer poolingLayer = new PoolingLayer(MaxPool.getInstance(), 2, 2, convolutionLayer);
+        StandardLayer outputLayer = new StandardLayer(1, poolingLayer.neurons, Linear.getInstance(), ZeroInitializer.getInstance());
+        convolutionLayer.neurons.get(0).properties.weights = Vector.ize(1);
+        convolutionLayer.neurons.get(0).properties.bias = 0;
+        outputLayer.neurons.get(0).properties.weights = Vector.ize(1);
+        NeuralNetwork nn = new NeuralNetwork(inputLayer, Square.getInstance(), convolutionLayer, poolingLayer, outputLayer);
+        nn.train(Vector.ize(0, 1, 0.1, 0), Vector.ize(0));
+        nn.update(0.5);
+
+        assertEquals(0.5, convolutionLayer.neurons.get(0).properties.weights[0]);
+        assertEquals(-0.5, convolutionLayer.neurons.get(0).properties.bias);
     }
 
     private void setProperties(NeuralNetwork nn, double[][] biases, double[][][] weights) {

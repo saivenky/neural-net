@@ -12,9 +12,11 @@ public class NeuralNetworkTrainer {
         this.trainData = trainData;
     }
 
-    public void train(double learningRate, int batchSize) {
+    public void train(double learningRate, int batchSize, Evaluator evaluator) {
         Data.shuffle(trainData);
         int batchEnd = batchSize - 1;
+        int currentBatch = 0;
+        int totalBatches = trainData.length / batchSize;
         for(int j = 0; j < trainData.length; j++) {
             Data.Example e = trainData[j];
             neuralNetwork.train(e.input, e.output);
@@ -23,13 +25,24 @@ public class NeuralNetworkTrainer {
                 neuralNetwork.reselectDropouts();
                 batchEnd += batchSize;
                 if (batchEnd >= trainData.length) batchEnd = trainData.length - 1;
+                evaluator.f(currentBatch++);
             }
         }
     }
 
-    public void train(int epochs, double learningRate, int batchSize) {
+    public void train(int epochs, double learningRate, int batchSize, Evaluator evaluator) {
         for (int i = 0; i < epochs; i++) {
-            train(learningRate, batchSize);
+            train(learningRate, batchSize, evaluator);
         }
     }
+
+    public static abstract class Evaluator {
+        public abstract void f(int batchNumber);
+    }
+
+    public static final Evaluator NullEvaluator = new Evaluator() {
+        @Override
+        public void f(int batchNumber) {
+        }
+    };
 }
