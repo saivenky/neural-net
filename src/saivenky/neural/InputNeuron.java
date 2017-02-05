@@ -3,10 +3,11 @@ package saivenky.neural;
 /**
  * Created by saivenky on 1/31/17.
  */
-public class InputNeuron extends Neuron {
+public class InputNeuron implements INeuron {
+    private double activation;
 
     public InputNeuron() {
-        super((NeuronProperties)null, null, null);
+        activation = 0;
     }
 
     void setActivation(double activation) {
@@ -14,20 +15,42 @@ public class InputNeuron extends Neuron {
     }
 
     @Override
-    void signalForSelected() {}
+    public double getActivation() {
+        return activation;
+    }
 
     @Override
-    void signalScaled(double scale) {}
+    public void activate() {
+
+    }
 
     @Override
-    void update(double rate) {}
+    public void activateScaled(double scale) {
+
+    }
 
     @Override
-    void addToSignalCostGradient(double weight, double cost) {}
+    public void update(double rate) {
+
+    }
 
     @Override
-    void propagateToInputNeurons() {}
+    public void addToSignalCostGradient(double weight, double cost) {
+
+    }
 
     @Override
-    void propagateToProperties() {}
+    public void multiplyByActivation1() {
+
+    }
+
+    @Override
+    public void propagateToInputNeurons() {
+
+    }
+
+    @Override
+    public void propagateToProperties() {
+
+    }
 }

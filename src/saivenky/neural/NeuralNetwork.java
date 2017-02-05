@@ -24,16 +24,27 @@ public class NeuralNetwork {
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
+        this(layerSizes, activationFunction, costFunction, neuronInitializer, new double[layerSizes.length]);
+    }
+
+    public NeuralNetwork(
+            int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer, double[] dropoutRate) {
         this(new InputLayer(layerSizes[0]), costFunction, new Layer[layerSizes.length - 1]);
-        NeuronSet inputNeuronSet = new NeuronSet(inputLayer.neurons);
-        NeuronSet previousLayerNeurons = inputNeuronSet;
+        ILayer previousLayer = inputLayer;
         for (int i = 1; i < layerSizes.length; i++) {
             layers[i - 1] = new StandardLayer(
-                    layerSizes[i], previousLayerNeurons, activationFunction, neuronInitializer);
-            previousLayerNeurons = layers[i-1].neurons;
+                    layerSizes[i], previousLayer, activationFunction, neuronInitializer, dropoutRate[i]);
+            previousLayer = layers[i-1];
         }
 
         outputLayer = layers[layers.length - 1];
+        predicted = new double[outputLayer.neurons.size()];
+    }
+
+    private void updatePredicted() {
+        for(int i = 0; i < outputLayer.neurons.size(); i++) {
+            predicted[i] = outputLayer.neurons.get(i).getActivation();
+        }
     }
 
     public NeuralNetwork(InputLayer inputLayer, CostFunction costFunction, Layer ... layers) {
@@ -42,57 +53,35 @@ public class NeuralNetwork {
         this.layers = layers;
         outputLayer = layers[layers.length - 1];
         trainedExamples = 0;
-    }
-
-    public void setDropouts(double[] dropouts) {
-        for(int i = 0; i < layers.length - 1; i++) {
-            layers[i].setDropoutRate(dropouts[i]);
-        }
+        if (outputLayer != null) predicted = new double[outputLayer.neurons.size()];
     }
 
     public void run(double[] input) {
-        inputLayer.setInput(input);
-        double inputDropoutRate = 0;
-        for (int i = 0; i < layers.length; i++) {
-            layers[i].runScaled(inputDropoutRate);
-            inputDropoutRate = layers[i].dropoutRate;
-        }
-
-        predicted = new double[outputLayer.neurons.size()];
-        outputLayer.neurons.forAll(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                predicted[i] = neuron.activation;
-            }
-        });
-    }
-
-    private void feedforward(double[] input) {
         inputLayer.setInput(input);
         for (int i = 0; i < layers.length; i++) {
             layers[i].run();
         }
 
-        predicted = new double[outputLayer.neurons.size()];
-        outputLayer.neurons.forAll(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                predicted[i] = neuron.activation;
-            }
-        });
+        updatePredicted();
+    }
+
+    private void feedforward(double[] input) {
+        inputLayer.setInput(input);
+        for (int i = 0; i < layers.length; i++) {
+            layers[i].feedforward();
+        }
+
+        updatePredicted();
     }
 
     private void backpropagate(double[] output) {
         double[] cost = costFunction.f1(predicted, output);
-        outputLayer.neurons.forAll(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                neuron.signalCostGradient += cost[i] * neuron.activation1;
-            }
-        });
+        outputLayer.setSignalCostGradient(cost);
+        outputLayer.multiplySignalCostGradientByActivation1();
 
         for (int i = layers.length - 1; i >= 1; i--) {
             layers[i].backpropagate();
+            layers[i-1].multiplySignalCostGradientByActivation1();
         }
 
         for (int i = layers.length - 1; i >= 0; i--) {
@@ -116,7 +105,9 @@ public class NeuralNetwork {
 
     void reselectDropouts() {
         for (Layer l : layers) {
-            l.reselectDropout();
+            if (l instanceof IDropoutLayer) {
+                ((IDropoutLayer)l).reselectDropout();
+            }
         }
     }
 

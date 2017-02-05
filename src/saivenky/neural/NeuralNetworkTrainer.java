@@ -17,6 +17,7 @@ public class NeuralNetworkTrainer {
         int batchEnd = batchSize - 1;
         int currentBatch = 0;
         int totalBatches = trainData.length / batchSize;
+        long batchStartTime = System.currentTimeMillis();
         for(int j = 0; j < trainData.length; j++) {
             Data.Example e = trainData[j];
             neuralNetwork.train(e.input, e.output);
@@ -25,7 +26,9 @@ public class NeuralNetworkTrainer {
                 neuralNetwork.reselectDropouts();
                 batchEnd += batchSize;
                 if (batchEnd >= trainData.length) batchEnd = trainData.length - 1;
-                evaluator.f(currentBatch++);
+                long batchEndTime = System.currentTimeMillis();
+                evaluator.f(currentBatch++, batchEndTime - batchStartTime);
+                batchStartTime = batchEndTime;
             }
         }
     }
@@ -37,12 +40,12 @@ public class NeuralNetworkTrainer {
     }
 
     public static abstract class Evaluator {
-        public abstract void f(int batchNumber);
+        public abstract void f(int batchNumber, long batchTimeMillis);
     }
 
     public static final Evaluator NullEvaluator = new Evaluator() {
         @Override
-        public void f(int batchNumber) {
+        public void f(int batchNumber, long batchTimeMillis) {
         }
     };
 }

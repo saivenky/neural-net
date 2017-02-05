@@ -3,68 +3,46 @@ package saivenky.neural;
 /**
  * Created by saivenky on 1/26/17.
  */
-public class Layer {
+public abstract class Layer implements ILayer {
     public NeuronSet neurons;
-    double dropoutRate;
-    int[] nonDropout;
 
     Layer(NeuronSet neurons) {
         this.neurons = neurons;
     }
 
-    final void setDropoutRate(double dropoutRate) {
-        this.dropoutRate = dropoutRate;
-        int nonDropoutLength = neurons.size() - (int)(neurons.size() * dropoutRate);
-        nonDropout = new int[nonDropoutLength];
-        Vector.select(nonDropout, neurons.size());
-        neurons.select(nonDropout);
+    public NeuronSet getNeurons() {
+        return neurons;
     }
 
-    final void reselectDropout() {
-        Vector.select(nonDropout, neurons.size());
-    }
-
-    void run() {
+    public void run() {
         neurons.activate();
     }
 
-    private static double signalScaleFromDropout(double dropoutRate) {
-        return (1 - dropoutRate);
+    public void feedforward() {
+        neurons.activate();
     }
 
-    void runScaled(double inputDropoutRate) {
-        double scale = signalScaleFromDropout(inputDropoutRate);
-        neurons.activateScaled(scale);
+    public void backpropagate() {
+        neurons.backpropagate();
     }
 
-    void backpropagate() {
-        neurons.forSelected(propagateToInputNeurons);
+    public void updateGradient() {
+        neurons.updateGradient();
     }
 
-    void updateGradient() {
-        neurons.forSelected(propagateToProperties);
+    public void gradientDescent(double rate) {
+        neurons.update(rate);
     }
 
-    void gradientDescent(double rate) {
-        neurons.forSelected(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                neuron.update(rate);
-            }
-        });
-    }
-
-    private static NeuronSet.NeuronAction propagateToInputNeurons = new NeuronSet.NeuronAction() {
-        @Override
-        void f(Neuron neuron, int i) {
-            neuron.propagateToInputNeurons();
+    public void setSignalCostGradient(double[] cost) {
+        for (int i = 0; i < neurons.size(); i++) {
+            neurons.get(i).addToSignalCostGradient(1, cost[i]);
         }
-    };
+    }
 
-    private static NeuronSet.NeuronAction propagateToProperties = new NeuronSet.NeuronAction() {
-        @Override
-        void f(Neuron neuron, int i) {
-            neuron.propagateToProperties();
+    public void multiplySignalCostGradientByActivation1() {
+        for(int i : neurons.selected) {
+            neurons.get(i).multiplyByActivation1();
         }
-    };
+    }
 }

@@ -17,15 +17,19 @@ public class NeuronProperties {
         }
     }
 
-    public NeuronProperties(NeuronInitializer neuronInitializer, int previousLayerNeurons) {
-        weights = new double[previousLayerNeurons];
-        weightCostGradient = new double[previousLayerNeurons];
+    public NeuronProperties(NeuronInitializer neuronInitializer, int inputSize) {
+        this(inputSize);
         initializeWeights(neuronInitializer, weights);
         bias = neuronInitializer.createBias();
     }
 
-    public double affineScaled(NeuronSet input, double scale) {
-        return affineScaled(weights, input, bias, scale);
+    private NeuronProperties(int inputSize) {
+        weights = new double[inputSize];
+        weightCostGradient = new double[inputSize];
+    }
+
+    public double affine(NeuronSet input) {
+        return affine(weights, input, bias);
     }
 
     public double affineForSelected(NeuronSet input) {
@@ -39,24 +43,22 @@ public class NeuronProperties {
         biasCostGradient = 0;
     }
 
-    private static double affineScaled(double[] weight, NeuronSet input, double bias, double scale) {
-        //Vector.multiply(weight, input, weightedInput);
+    private static double affine(double[] weight, NeuronSet input, double bias) {
         double sum = 0;
         for(int i = 0; i < weight.length; i++) {
-            sum += weight[i] * input.get(i).activation;
+            sum += weight[i] * input.get(i).getActivation();
         }
-        return scale * sum + bias;
+        return sum + bias;
     }
 
     private static double affineForSelected(double[] weight, NeuronSet input, double bias) {
-        //Vector.multiplySelected(weight, input, weightedInput, selected);
         if(input.selected == null) {
-            return affineScaled(weight, input, bias, 1);
+            return affine(weight, input, bias);
         }
 
         double sum = 0;
         for(int i : input.selected) {
-            sum += weight[i] * input.get(i).activation;
+            sum += weight[i] * input.get(i).getActivation();
         }
 
         return sum + bias;

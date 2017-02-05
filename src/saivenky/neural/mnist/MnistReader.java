@@ -1,8 +1,8 @@
 package saivenky.neural.mnist;
 
 import saivenky.neural.*;
+import saivenky.neural.activation.Linear;
 import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.activation.pooling.MaxPool;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.DataUtils;
 import saivenky.neural.image.ImageWriter;
@@ -104,25 +104,23 @@ public class MnistReader {
         }
 
         System.out.print("Initializing network");
-        NeuralNetwork nn = getStandardNeuralNetwork();
+        NeuralNetwork nn = getConvolutionNeuralNetwork();
 
         NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(nn, trainingData);
 
         int batchSize = 60;
-        double learningRate = 0.3;
-        int epochs = 15;
+        double learningRate = 0.1;
+        int epochs = 200;
 
         for(int i = 0; i < epochs; i++) {
             System.out.println("Epoch " + i);
             trainer.train(learningRate, batchSize, new NeuralNetworkTrainer.Evaluator() {
                 @Override
-                public void f(int batchNumber) {
-                    //System.out.printf("Batch %d - test data correct: %s\n", batchNumber, checkLabels(nn, testData, testLabels, 100));
+                public void f(int batchNumber, long batchTimeMillis) {
+                    System.out.printf("Batch %d (%.3fs) - test data correct: %s\n", batchNumber, (double)batchTimeMillis / 1000, checkLabels(nn, testData, testLabels, 100));
                 }
             });
             System.out.println("test data correct: " + checkLabels(nn, testData, testLabels, testData.length));
-            //System.out.println("train data correct: " + checkLabels(nn, trainingData));
-
         }
 
         File outputDir = new File("/home/saivenky/mnist-testing-result");
@@ -134,30 +132,29 @@ public class MnistReader {
 
     private static NeuralNetwork getStandardNeuralNetwork() {
         int[] layers = {IMAGE_WIDTH * IMAGE_HEIGHT, 120, 10};
-        double[] dropouts = {0.25};
+        double[] dropouts = {0, 0.25, 0};
 
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), new GaussianInitializer());
-        nn.setDropouts(dropouts);
+        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), new GaussianInitializer(), dropouts);
         System.out.println("...");
 
         return nn;
     }
 
     private static NeuralNetwork getConvolutionNeuralNetwork() {
-        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT);
-        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(inputLayer.neurons, IMAGE_WIDTH, IMAGE_HEIGHT);
+        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT], IMAGE_WIDTH, IMAGE_HEIGHT);
+        InputLayer inputLayer = new InputLayer(spatial2DStructure);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Sigmoid.getInstance(), 20, 8, 8, spatial2DStructure);
+                Sigmoid.getInstance(), 20, 8, 8, inputLayer, spatial2DStructure);
         System.out.print(".");
 
-        PoolingLayer poolingLayer = new PoolingLayer(MaxPool.getInstance(), 2, 2, convolutionLayer);
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
-                30, poolingLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+                100, poolingLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
         StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+                10, standardLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
 
         NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, poolingLayer, standardLayer, outputLayer);
         System.out.println(".");
@@ -166,18 +163,18 @@ public class MnistReader {
     }
 
     private static NeuralNetwork getSmallConvolutionNeuralNetwork() {
-        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT);
-        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(inputLayer.neurons, IMAGE_WIDTH, IMAGE_HEIGHT);
+        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(new INeuron[IMAGE_HEIGHT * IMAGE_HEIGHT], IMAGE_WIDTH, IMAGE_HEIGHT);
+        InputLayer inputLayer = new InputLayer(spatial2DStructure);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Sigmoid.getInstance(), 4, 14, 14, spatial2DStructure);
+                Linear.getInstance(), 10, 14, 14, inputLayer, spatial2DStructure);
         System.out.print(".");
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
-                30, convolutionLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+                30, convolutionLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
         StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer.neurons, Sigmoid.getInstance(), new GaussianInitializer());
+                10, standardLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
 
         NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, standardLayer, outputLayer);
         System.out.println(".");

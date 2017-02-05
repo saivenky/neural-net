@@ -6,13 +6,13 @@ import saivenky.neural.neuron.NeuronInitializer;
 /**
  * Created by saivenky on 1/26/17.
  */
-public class Neuron {
+public class Neuron implements INeuron {
     final NeuronProperties properties;
     final NeuronSet inputNeurons;
-    ActivationFunction activationFunction;
-    public double activation;
-    public double activation1;
-    public double signalCostGradient;
+    final ActivationFunction activationFunction;
+    double activation;
+    double activation1;
+    double signalCostGradient;
 
     Neuron(NeuronProperties properties, NeuronSet inputNeurons, ActivationFunction activationFunction) {
         this.properties = properties;
@@ -26,43 +26,46 @@ public class Neuron {
         properties = new NeuronProperties(neuronInitializer, inputNeurons.size());
     }
 
-    void signalForSelected() {
+    @Override
+    public double getActivation() {
+        return activation;
+    }
+
+    public void activate() {
         double signal = properties.affineForSelected(inputNeurons);
         activation = activationFunction.f(signal);
         activation1 = activationFunction.f1(signal);
     }
 
-    void signalScaled(double scale) {
-        double signal = properties.affineScaled(inputNeurons, scale);
-        activation = activationFunction.f(signal);
-        activation1 = activationFunction.f1(signal);
+    public void activateScaled(double scale) {
+        double signal = properties.affine(inputNeurons);
+        activation = activationFunction.f(signal) * scale;
+        activation1 = 0;
     }
 
-    void update(double rate) {
+    public void update(double rate) {
         properties.update(rate);
     }
 
-    void addToSignalCostGradient(double weight, double cost) {
-        signalCostGradient += weight * cost * activation1;
+    public void addToSignalCostGradient(double weight, double cost) {
+        signalCostGradient += weight * cost;
     }
 
-    void propagateToInputNeurons() {
-        inputNeurons.forSelected(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                neuron.addToSignalCostGradient(properties.weights[i], signalCostGradient);
-            }
-        });
+    public void multiplyByActivation1() {
+        signalCostGradient *= activation1;
     }
 
-    void propagateToProperties() {
+    public void propagateToInputNeurons() {
+        for(int i : inputNeurons.selected) {
+            inputNeurons.get(i).addToSignalCostGradient(properties.weights[i], signalCostGradient);
+        }
+    }
+
+    public void propagateToProperties() {
         properties.biasCostGradient += signalCostGradient;
-        inputNeurons.forSelected(new NeuronSet.NeuronAction() {
-            @Override
-            void f(Neuron neuron, int i) {
-                properties.weightCostGradient[i] += neuron.activation * signalCostGradient;
-            }
-        });
+        for(int i : inputNeurons.selected) {
+            properties.weightCostGradient[i] += inputNeurons.get(i).getActivation() * signalCostGradient;
+        }
         signalCostGradient = 0;
     }
 }
