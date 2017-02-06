@@ -10,14 +10,10 @@ public interface ILayer {
 
     void feedforward();
 
-    void backpropagate();
-
-    void updateGradient();
+    void backpropagate(boolean backpropagateToPreviousLayer);
 
     void gradientDescent(double rate);
 
     void setSignalCostGradient(double[] cost);
-
-    void multiplySignalCostGradientByActivation1();
 }
 

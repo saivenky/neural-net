@@ -43,7 +43,7 @@ public class Neuron implements INeuron {
         activation1 = 0;
     }
 
-    public void update(double rate) {
+    public void gradientDescent(double rate) {
         properties.update(rate);
     }
 
@@ -51,21 +51,21 @@ public class Neuron implements INeuron {
         signalCostGradient += weight * cost;
     }
 
-    public void multiplyByActivation1() {
-        signalCostGradient *= activation1;
+    private void backpropagateToInputNeurons() {
+        inputNeurons.addSignalCostGradient(properties.weights, signalCostGradient);
     }
 
-    public void propagateToInputNeurons() {
-        for(int i : inputNeurons.selected) {
-            inputNeurons.get(i).addToSignalCostGradient(properties.weights[i], signalCostGradient);
-        }
-    }
-
-    public void propagateToProperties() {
+    private void updateGradient() {
         properties.biasCostGradient += signalCostGradient;
         for(int i : inputNeurons.selected) {
             properties.weightCostGradient[i] += inputNeurons.get(i).getActivation() * signalCostGradient;
         }
+    }
+
+    public void backpropagate(boolean backpropagateToInputNeurons) {
+        signalCostGradient *= activation1;
+        updateGradient();
+        if(backpropagateToInputNeurons) backpropagateToInputNeurons();
         signalCostGradient = 0;
     }
 }

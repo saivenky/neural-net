@@ -35,17 +35,12 @@ public class MaxPoolingNeuron implements INeuron {
         activation *= scale;
     }
 
-    public void update(double rate) {}
+    public void gradientDescent(double rate) {}
 
     public void addToSignalCostGradient(double weight, double cost) {
         double poolCost = weight * cost;
         inputNeurons.get(indexOfMaxInputNeuron).addToSignalCostGradient(1, poolCost);
     }
 
-    public void multiplyByActivation1() {
-    }
-
-    public void propagateToInputNeurons() {}
-
-    public void propagateToProperties() {}
+    public void backpropagate(boolean backPropagateToInputNeurons) {}
 }

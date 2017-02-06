@@ -44,12 +44,7 @@ public class InputLayer implements ILayer {
     }
 
     @Override
-    public void backpropagate() {
-
-    }
-
-    @Override
-    public void updateGradient() {
+    public void backpropagate(boolean backpropagateToPreviousLayer) {
 
     }
 
@@ -60,11 +55,6 @@ public class InputLayer implements ILayer {
 
     @Override
     public void setSignalCostGradient(double[] cost) {
-
-    }
-
-    @Override
-    public void multiplySignalCostGradientByActivation1() {
 
     }
 }

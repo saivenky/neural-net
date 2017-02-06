@@ -30,7 +30,7 @@ public class InputNeuron implements INeuron {
     }
 
     @Override
-    public void update(double rate) {
+    public void gradientDescent(double rate) {
 
     }
 
@@ -40,17 +40,7 @@ public class InputNeuron implements INeuron {
     }
 
     @Override
-    public void multiplyByActivation1() {
-
-    }
-
-    @Override
-    public void propagateToInputNeurons() {
-
-    }
-
-    @Override
-    public void propagateToProperties() {
+    public void backpropagate(boolean backpropagateToInputNeurons) {
 
     }
 }

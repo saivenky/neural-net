@@ -77,21 +77,15 @@ public class NeuralNetwork {
     private void backpropagate(double[] output) {
         double[] cost = costFunction.f1(predicted, output);
         outputLayer.setSignalCostGradient(cost);
-        outputLayer.multiplySignalCostGradientByActivation1();
-
-        for (int i = layers.length - 1; i >= 1; i--) {
-            layers[i].backpropagate();
-            layers[i-1].multiplySignalCostGradientByActivation1();
-        }
 
         for (int i = layers.length - 1; i >= 0; i--) {
-            layers[i].updateGradient();
+            layers[i].backpropagate(i != 0); //input layer can't learn
         }
     }
 
     void update(double learningRate) {
-        for (int i = 0; i < layers.length; i++) {
-            layers[i].gradientDescent(learningRate / trainedExamples);
+        for (Layer layer : layers) {
+            layer.gradientDescent(learningRate / trainedExamples);
         }
 
         trainedExamples = 0;

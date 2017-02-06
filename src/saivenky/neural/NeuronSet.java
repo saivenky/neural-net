@@ -41,21 +41,21 @@ public class NeuronSet {
         }
     }
 
-    public void backpropagate() {
+    public void backpropagate(boolean backpropagateToInputNeurons) {
         for(int i : selected) {
-            neurons[i].propagateToInputNeurons();
+            neurons[i].backpropagate(backpropagateToInputNeurons);
         }
     }
 
-    public void updateGradient() {
+    public void gradientDescent(double rate) {
         for(int i : selected) {
-            neurons[i].propagateToProperties();
+            neurons[i].gradientDescent(rate);
         }
     }
 
-    public void update(double rate) {
+    public void addSignalCostGradient(double[] weight, double cost) {
         for(int i : selected) {
-            neurons[i].update(rate);
+            neurons[i].addToSignalCostGradient(weight[i], cost);
         }
     }
 
