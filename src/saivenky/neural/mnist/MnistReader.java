@@ -134,7 +134,7 @@ public class MnistReader {
         int[] layers = {IMAGE_WIDTH * IMAGE_HEIGHT, 120, 10};
         double[] dropouts = {0, 0.25, 0};
 
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), new GaussianInitializer(), dropouts);
+        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), GaussianInitializer.getInstance(), dropouts);
         System.out.println("...");
 
         return nn;
@@ -152,9 +152,9 @@ public class MnistReader {
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
-                100, poolingLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
+                100, poolingLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
         StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
+                10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
 
         NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, poolingLayer, standardLayer, outputLayer);
         System.out.println(".");
@@ -172,9 +172,9 @@ public class MnistReader {
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
-                30, convolutionLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
+                30, convolutionLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
         StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer, Sigmoid.getInstance(), new GaussianInitializer(), 0);
+                10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
 
         NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, standardLayer, outputLayer);
         System.out.println(".");

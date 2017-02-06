@@ -15,10 +15,9 @@ public class ConvolutionLayer extends Layer {
         super(null);
         this.activationFunction = activationFunction;
 
-        GaussianInitializer gaussianInitializer = new GaussianInitializer();
         NeuronProperties[] properties = new NeuronProperties[frames];
         for(int f = 0; f < frames; f++) {
-            properties[f] = new NeuronProperties(gaussianInitializer, segmentWidth * segmentHeight);
+            properties[f] = new NeuronProperties(GaussianInitializer.getInstance(), segmentWidth * segmentHeight);
         }
 
         initializeNeurons(properties, frames, segmentWidth, segmentHeight, spatial2DStructure);
