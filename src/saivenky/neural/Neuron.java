@@ -47,7 +47,7 @@ public class Neuron implements INeuron {
         properties.update(rate);
     }
 
-    public void addToSignalCostGradient(double weight, double cost) {
+    public synchronized void addToSignalCostGradient(double weight, double cost) {
         signalCostGradient += weight * cost;
     }
 

@@ -36,7 +36,7 @@ public class NeuronProperties {
         return affineForSelected(weights, input, bias);
     }
 
-    public void update(double rate) {
+    public synchronized void update(double rate) {
         Vector.multiplyAndAdd(weightCostGradient, -rate, weights);
         bias -= rate * biasCostGradient;
         Vector.zero(weightCostGradient);

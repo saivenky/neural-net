@@ -141,14 +141,15 @@ public class MnistReader {
     }
 
     private static NeuralNetwork getConvolutionNeuralNetwork() {
-        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT], IMAGE_WIDTH, IMAGE_HEIGHT);
-        InputLayer inputLayer = new InputLayer(spatial2DStructure);
+        NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
+        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT);
+        InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Sigmoid.getInstance(), 20, 8, 8, inputLayer, spatial2DStructure);
+                Sigmoid.getInstance(), 20, 8, 8, inputLayer.getNeurons());
         System.out.print(".");
 
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer.getNeurons());
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
@@ -163,11 +164,12 @@ public class MnistReader {
     }
 
     private static NeuralNetwork getSmallConvolutionNeuralNetwork() {
-        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(new INeuron[IMAGE_HEIGHT * IMAGE_HEIGHT], IMAGE_WIDTH, IMAGE_HEIGHT);
-        InputLayer inputLayer = new InputLayer(spatial2DStructure);
+        NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
+        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT);
+        InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Linear.getInstance(), 10, 14, 14, inputLayer, spatial2DStructure);
+                Linear.getInstance(), 10, 14, 14, inputLayer.getNeurons());
         System.out.print(".");
         System.out.print(".");
 

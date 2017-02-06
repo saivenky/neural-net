@@ -12,7 +12,7 @@ public class StandardLayer extends Layer implements IDropoutLayer {
 
     public StandardLayer(
             int neuronCount, ILayer previousLayer, ActivationFunction activationFunction, NeuronInitializer neuronInitializer, double dropoutRate) {
-        super(new NeuronSet(new Neuron[neuronCount]));
+        super(new ThreadedNeuronSet(new Neuron[neuronCount]));
         initializeNeurons(neuronInitializer, previousLayer.getNeurons(), activationFunction);
         this.dropoutRate = dropoutRate;
         setDropoutRate(this.dropoutRate);

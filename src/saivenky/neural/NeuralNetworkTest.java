@@ -272,10 +272,11 @@ public class NeuralNetworkTest {
 
     @Test
     void ConvolutionPoolLayer() {
-        Spatial2DStructure spatial2DStructure = new Spatial2DStructure(new INeuron[2 * 2], 2, 2);
+        NeuronSet spatial2DStructure = new NeuronSet(new INeuron[2 * 2]);
+        spatial2DStructure.setShape(2, 2);
         InputLayer inputLayer = new InputLayer(spatial2DStructure);
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(Linear.getInstance(), 1, 1, 1, inputLayer, spatial2DStructure);
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(Linear.getInstance(), 1, 1, 1, inputLayer.getNeurons());
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer.getNeurons());
         StandardLayer outputLayer = new StandardLayer(1, poolingLayer, Linear.getInstance(), ZeroInitializer.getInstance(), 0);
         ((Neuron)convolutionLayer.neurons.get(0)).properties.weights = Vector.ize(1);
         ((Neuron)convolutionLayer.neurons.get(0)).properties.bias = 0;

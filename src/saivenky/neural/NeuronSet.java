@@ -3,11 +3,16 @@ package saivenky.neural;
 /**
  * Created by saivenky on 1/30/17.
  */
-public class NeuronSet {
+public class NeuronSet implements Spatial2DStructure, Spatial3DStructure {
     INeuron[] neurons;
     public int[] selected;
 
-    NeuronSet(INeuron[] neurons) {
+    private int width;
+    private int height;
+    private int depth;
+    private int widthHeight;
+
+    public NeuronSet(INeuron[] neurons) {
         this.neurons = neurons;
         selected = new int[neurons.length];
         Vector.select(selected, neurons.length);
@@ -68,5 +73,75 @@ public class NeuronSet {
         }
         builder.append(neurons[neurons.length - 1].getActivation() + "]");
         return builder.toString();
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public int getDepth() {
+        return depth;
+    }
+
+    @Override
+    public void setShape(int width, int height, int depth) {
+        this.width = width;
+        this.height = height;
+        this.depth = depth;
+        widthHeight = width * height;
+    }
+
+    @Override
+    public INeuron get(int x, int y, int z) {
+        return neurons[z * widthHeight + y * width + x];
+    }
+
+    @Override
+    public void set(int x, int y, int z, INeuron neuron) {
+        neurons[z * widthHeight + y * width + x] = neuron;
+    }
+
+    @Override
+    public INeuron[] getSegmentSlice(int startX, int endX, int startY, int endY, int z) {
+        INeuron[] neurons = new INeuron[(endX - startX + 1) * (endY - startY + 1)];
+        int i = 0;
+        for(int x = startX; x <= endX; x++) {
+            for(int y = startY; y <= endY; y++) {
+                neurons[i++] = get(x, y, z);
+            }
+        }
+
+        return neurons;
+    }
+
+    @Override
+    public void setShape(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public INeuron get(int x, int y) {
+        return neurons[y * width + x];
+    }
+
+    @Override
+    public INeuron[] getSegment(int startX, int endX, int startY, int endY) {
+        INeuron[] neurons = new INeuron[(endX - startX + 1) * (endY - startY + 1)];
+        int i = 0;
+        for(int x = startX; x <= endX; x++) {
+            for(int y = startY; y <= endY; y++) {
+                neurons[i++] = get(x, y);
+            }
+        }
+
+        return neurons;
     }
 }
