@@ -23,10 +23,11 @@ public class ConvolutionLayer extends Layer {
     }
 
     private void initializeNeurons(NeuronProperties[] properties, int frames, int segmentWidth, int segmentHeight, Spatial2DStructure spatial2DStructure) {
-        Neuron[] neuronArray = new Neuron[
-                frames * (spatial2DStructure.getWidth() - segmentWidth + 1) * (spatial2DStructure.getHeight() - segmentHeight + 1)];
+        int outputWidth = FilterDimensionCalculator.calculateOutputSize(spatial2DStructure.getWidth(), segmentWidth, 1);
+        int outputHeight = FilterDimensionCalculator.calculateOutputSize(spatial2DStructure.getHeight(), segmentHeight, 1);
+        Neuron[] neuronArray = new Neuron[frames * outputWidth * outputHeight];
         neurons = new ThreadedNeuronSet(neuronArray);
-        neurons.setShape(spatial2DStructure.getWidth() - segmentWidth + 1, spatial2DStructure.getHeight() - segmentHeight + 1, frames);
+        neurons.setShape(outputWidth, outputHeight, frames);
 
         for(int x = 0; x < neurons.getWidth(); x++) {
             for(int y = 0; y < neurons.getHeight(); y++) {
