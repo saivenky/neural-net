@@ -8,9 +8,15 @@ import java.util.concurrent.*;
  * Created by saivenky on 2/6/17.
  */
 public class ThreadedNeuronSet extends NeuronSet {
-    private static int N_THREADS = 4;
+    private static int N_THREADS = 2;
+
+    static {
+        Runtime runtime = Runtime.getRuntime();
+        N_THREADS = runtime.availableProcessors();
+    }
+
     private final ExecutorService pool;
-    private List<Callable<Integer>> activateExecutors;
+    private List<SplitActivateExecutor> activateExecutors;
     private List<SplitAddCostExecutor> addCostExecutors;
     private List<SplitDescentExecutor> descentExecutors;
 
@@ -28,26 +34,7 @@ public class ThreadedNeuronSet extends NeuronSet {
     }
 
     public void activate() {
-        List<Future<Integer>> futures = null;
-        try {
-             futures = pool.invokeAll(activateExecutors);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if(futures == null) {
-            throw new RuntimeException("thread pool did not successfully invokeAll");
-        }
-
-        for(Future<Integer> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
+        executeOnThreads(pool, activateExecutors);
     }
 
     public void backpropagate(boolean backpropagateToInputNeurons) {
@@ -55,26 +42,7 @@ public class ThreadedNeuronSet extends NeuronSet {
             addCostExecutor.setInput(backpropagateToInputNeurons);
         }
 
-        List<Future<Integer>> futures = null;
-        try {
-            futures = pool.invokeAll(addCostExecutors);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if(futures == null) {
-            throw new RuntimeException("thread pool did not successfully invokeAll");
-        }
-
-        for(Future<Integer> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
+        executeOnThreads(pool, addCostExecutors);
     }
 
     public void gradientDescent(double rate) {
@@ -82,9 +50,13 @@ public class ThreadedNeuronSet extends NeuronSet {
             descentExecutor.setInput(rate);
         }
 
+        executeOnThreads(pool, descentExecutors);
+    }
+
+    private static void executeOnThreads(ExecutorService pool, List<? extends Callable<Integer>> callables) {
         List<Future<Integer>> futures = null;
         try {
-            futures = pool.invokeAll(descentExecutors);
+            futures = pool.invokeAll(callables);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

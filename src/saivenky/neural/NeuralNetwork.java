@@ -139,19 +139,13 @@ public class NeuralNetwork {
         Data.Example[] trainData = Data.generateFunction(function, 250);
         Data.Example[] testData = Data.generateFunction(function, 250);
 
-        NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(nn, trainData);
+        NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(trainData);
+        trainer.setNeuralNetwork(nn);
+        trainer.setBatchSize(1);
+        trainer.setLearningRate(0.3);
+        trainer.setEpochs(50);
 
-        int batchSize = 1;
-        double learningRate = 0.3;
-
-        for (int i = 0; i < 1000; i++) {
-            trainer.train(learningRate, batchSize, NullEvaluator);
-            double trainLoss = totalLoss(nn, trainData);
-            if (trainLoss < 0.001) {
-                System.out.printf("iter: %d\ntrainLoss: %s\n", i + 1, trainLoss);
-                break;
-            }
-        }
+        trainer.train(NullEvaluator, NullEvaluator);
 
         //should be greater than 0.8
         System.out.println("\ntest data correct: " + check1d(nn, testData));
