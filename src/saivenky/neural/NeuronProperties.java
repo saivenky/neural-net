@@ -5,11 +5,11 @@ import saivenky.neural.neuron.NeuronInitializer;
 /**
  * Created by saivenky on 1/30/17.
  */
-public class NeuronProperties {
-    public double[] weights;
-    public double bias;
-    public double[] weightCostGradient;
-    public double biasCostGradient;
+class NeuronProperties {
+    double[] weights;
+    double bias;
+    double[] weightCostGradient;
+    double biasCostGradient;
 
     private static void initializeWeights(NeuronInitializer neuronInitializer, double[] weights) {
         for(int i = 0; i < weights.length; i++) {
@@ -17,7 +17,7 @@ public class NeuronProperties {
         }
     }
 
-    public NeuronProperties(NeuronInitializer neuronInitializer, int inputSize) {
+    NeuronProperties(NeuronInitializer neuronInitializer, int inputSize) {
         this(inputSize);
         initializeWeights(neuronInitializer, weights);
         bias = neuronInitializer.createBias();
@@ -28,15 +28,15 @@ public class NeuronProperties {
         weightCostGradient = new double[inputSize];
     }
 
-    public double affine(NeuronSet input) {
+    double affine(NeuronSet input) {
         return affine(weights, input, bias);
     }
 
-    public double affineForSelected(NeuronSet input) {
+    double affineForSelected(NeuronSet input) {
         return affineForSelected(weights, input, bias);
     }
 
-    public synchronized void update(double rate) {
+    synchronized void update(double rate) {
         Vector.multiplyAndAdd(weightCostGradient, -rate, weights);
         bias -= rate * biasCostGradient;
         Vector.zero(weightCostGradient);

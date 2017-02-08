@@ -40,6 +40,7 @@ public class MnistTester {
         NeuralNetwork nn = getConvolutionNeuralNetwork(trainer);
 
         trainer.setBatchSize(60);
+        final boolean[] shouldEvaluateBatch = {true};
 
         trainer.train(new NeuralNetworkTrainer.Evaluator() {
             @Override
@@ -49,7 +50,14 @@ public class MnistTester {
         }, new NeuralNetworkTrainer.Evaluator() {
             @Override
             public void f(int iteration, long timeTaken) {
-                System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double)timeTaken / 1000, checkLabels(nn, testData, testLabels, 100));
+                if (shouldEvaluateBatch[0]) {
+                    double accuracy = checkLabels(nn, testData, testLabels, 100);
+                    System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double)timeTaken / 1000, accuracy);
+                    if (accuracy > 0.9) shouldEvaluateBatch[0] = false;
+                }
+                else {
+                    System.out.printf("Batch %d complete (%.3fs).\n", iteration, (double)timeTaken / 1000);
+                }
             }
         });
 
@@ -76,10 +84,10 @@ public class MnistTester {
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Sigmoid.getInstance(), 20, 7, 7, inputLayer.getNeurons());
+                20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
 
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer.getNeurons());
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
@@ -103,7 +111,7 @@ public class MnistTester {
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Linear.getInstance(), 10, 14, 14, inputLayer.getNeurons());
+                10, 14, 14, inputLayer, Linear.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
         System.out.print(".");
 

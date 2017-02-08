@@ -275,9 +275,11 @@ public class NeuralNetworkTest {
         NeuronSet input = new NeuronSet(new INeuron[2 * 2]);
         input.setShape(2, 2, 1);
         InputLayer inputLayer = new InputLayer(input);
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(Linear.getInstance(), 1, 1, 1, inputLayer.getNeurons());
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer.getNeurons());
-        StandardLayer outputLayer = new StandardLayer(1, poolingLayer, Linear.getInstance(), ZeroInitializer.getInstance(), 0);
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+                1, 1, 1, inputLayer, Linear.getInstance(), ZeroInitializer.getInstance());
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
+        StandardLayer outputLayer = new StandardLayer(
+                1, poolingLayer, Linear.getInstance(), ZeroInitializer.getInstance(), 0);
         ((Neuron)convolutionLayer.neurons.get(0)).properties.weights = Vector.ize(1);
         ((Neuron)convolutionLayer.neurons.get(0)).properties.bias = 0;
         ((Neuron)outputLayer.neurons.get(0)).properties.weights = Vector.ize(1);

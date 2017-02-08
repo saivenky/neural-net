@@ -4,8 +4,9 @@ package saivenky.neural;
  * Created by saivenky on 2/1/17.
  */
 public class MaxPoolingLayer extends Layer {
-    public MaxPoolingLayer(int poolWidth, int poolHeight, Spatial3DStructure input3DStructure) {
+    public MaxPoolingLayer(int poolWidth, int poolHeight, ILayer previousLayer) {
         super( null);
+        Spatial3DStructure input3DStructure = previousLayer.getNeurons();
         initializeNeurons(poolWidth, poolHeight, input3DStructure);
     }
 
