@@ -72,11 +72,11 @@ public class MnistTester {
 
     private static NeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
-        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT);
+        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                Sigmoid.getInstance(), 20, 8, 8, inputLayer.getNeurons());
+                Sigmoid.getInstance(), 20, 7, 7, inputLayer.getNeurons());
         System.out.print(".");
 
         MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer.getNeurons());
@@ -99,7 +99,7 @@ public class MnistTester {
 
     private static NeuralNetwork getSmallConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
-        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT);
+        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(

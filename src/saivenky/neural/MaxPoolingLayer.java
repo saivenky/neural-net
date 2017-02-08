@@ -9,18 +9,19 @@ public class MaxPoolingLayer extends Layer {
         initializeNeurons(poolWidth, poolHeight, input3DStructure);
     }
 
-    void initializeNeurons(int poolWidth, int poolHeight, Spatial3DStructure input3DStructure) {
-        int frames = input3DStructure.getDepth();
-        INeuron[] neuronArray = new INeuron[
-                frames * (input3DStructure.getWidth() / poolWidth) * (input3DStructure.getHeight() / poolHeight)];
-        neurons = new ThreadedNeuronSet(neuronArray);
-        neurons.setShape(input3DStructure.getWidth() / poolWidth, input3DStructure.getHeight() / poolHeight, frames);
+    private void initializeNeurons(int poolWidth, int poolHeight, Spatial3DStructure input3DStructure) {
+        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), poolWidth, poolWidth);
+        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), poolHeight, poolHeight);
+        int outputDepth = input3DStructure.getDepth();
 
-        for(int x = 0; x < input3DStructure.getWidth() / poolWidth; x++) {
-            for(int y = 0; y < input3DStructure.getHeight() / poolHeight; y++) {
-                for(int z = 0; z < frames; z++) {
-                    INeuron[] segment = input3DStructure.getSegmentSlice(
-                            x * poolWidth, (x + 1) * poolWidth - 1, y * poolHeight, (y + 1) * poolHeight - 1, z);
+        INeuron[] neuronArray = new INeuron[outputWidth * outputHeight * outputDepth];
+        neurons = new ThreadedNeuronSet(neuronArray);
+        neurons.setShape(outputWidth, outputHeight, outputDepth);
+
+        for(int x = 0, inX = 0; x < neurons.getWidth(); x++, inX+=poolWidth) {
+            for(int y = 0, inY = 0; y < neurons.getHeight(); y++, inY+=poolHeight) {
+                for(int z = 0; z < neurons.getDepth(); z++) {
+                    INeuron[] segment = input3DStructure.getSegment(inX, inY, z, poolWidth, poolHeight, 1);
                     NeuronSet neuronSet = new ThreadedNeuronSet(segment);
                     neurons.set(x, y, z, new MaxPoolingNeuron(neuronSet));
                 }

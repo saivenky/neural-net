@@ -10,5 +10,5 @@ public interface Spatial3DStructure {
     void setShape(int width, int height, int depth);
     INeuron get(int x, int y, int z);
     void set(int x, int y, int z, INeuron neuron);
-    INeuron[] getSegmentSlice(int startX, int endX, int startY, int endY, int z);
+    INeuron[] getSegment(int startX, int startY, int startZ, int width, int height, int depth);
 }

@@ -3,7 +3,7 @@ package saivenky.neural;
 /**
  * Created by saivenky on 1/30/17.
  */
-public class NeuronSet implements Spatial2DStructure, Spatial3DStructure {
+public class NeuronSet implements Spatial3DStructure {
     INeuron[] neurons;
     public int[] selected;
 
@@ -109,36 +109,18 @@ public class NeuronSet implements Spatial2DStructure, Spatial3DStructure {
     }
 
     @Override
-    public INeuron[] getSegmentSlice(int startX, int endX, int startY, int endY, int z) {
-        INeuron[] neurons = new INeuron[(endX - startX + 1) * (endY - startY + 1)];
+    public INeuron[] getSegment(int startX, int startY, int startZ, int segmentWidth, int segmentHeight, int segmentDepth) {
+        INeuron[] neurons = new INeuron[segmentWidth * segmentHeight * segmentDepth];
         int i = 0;
-        for(int x = startX; x <= endX; x++) {
-            for(int y = startY; y <= endY; y++) {
-                neurons[i++] = get(x, y, z);
-            }
-        }
+        int endX = startX + segmentWidth;
+        int endY = startY + segmentHeight;
+        int endZ = startZ + segmentDepth;
 
-        return neurons;
-    }
-
-    @Override
-    public void setShape(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
-
-    @Override
-    public INeuron get(int x, int y) {
-        return neurons[y * width + x];
-    }
-
-    @Override
-    public INeuron[] getSegment(int startX, int endX, int startY, int endY) {
-        INeuron[] neurons = new INeuron[(endX - startX + 1) * (endY - startY + 1)];
-        int i = 0;
-        for(int x = startX; x <= endX; x++) {
-            for(int y = startY; y <= endY; y++) {
-                neurons[i++] = get(x, y);
+        for (int x = startX; x < endX; x++) {
+            for (int y = startY; y < endY; y++) {
+                for (int z = startZ; z < endZ; z++) {
+                    neurons[i++] = get(x, y, z);
+                }
             }
         }
 
