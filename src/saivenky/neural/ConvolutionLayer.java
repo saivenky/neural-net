@@ -16,7 +16,7 @@ public class ConvolutionLayer extends Layer {
 
         NeuronProperties[] properties = new NeuronProperties[frames];
         for(int f = 0; f < frames; f++) {
-            properties[f] = new NeuronProperties(GaussianInitializer.getInstance(), segmentWidth * segmentHeight);
+            properties[f] = new NeuronProperties(GaussianInitializer.getInstance(), segmentWidth * segmentHeight * input3DStructure.getDepth());
         }
 
         initializeNeurons(properties, frames, segmentWidth, segmentHeight, input3DStructure);
