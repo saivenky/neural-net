@@ -112,7 +112,6 @@ public class NeuralNetwork {
 
     public static void main(String[] args) {
         int[] layers = {2, 8, 2, 1};
-        Vector.initialize(System.currentTimeMillis());
         NeuronInitializer neuronInitializer = new NeuronInitializer(
                 new NeuronInitializer.Function() {
                     @Override
