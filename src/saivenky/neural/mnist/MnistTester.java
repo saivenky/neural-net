@@ -29,6 +29,7 @@ public class MnistTester {
         String outputDirectoryPath = args[4];
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("Enter network type (standard, cnn, or small-cnn): ");
         String networkType = br.readLine().toLowerCase().intern();
 
         File outputDir = MnistReader.getRealFile(outputDirectoryPath);
@@ -41,25 +42,26 @@ public class MnistTester {
             testLabels[i] = getLabel(testData[i].output);
         }
 
-        System.out.print("Initializing network");
+
+        System.out.print("Initializing network (");
         NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(trainingData);
         NeuralNetwork nn;
         switch(networkType) {
             case "standard":
+                System.out.println("standard)");
                 nn = getStandardNeuralNetwork(trainer);
-                System.out.print("standard");
                 break;
             case "cnn":
                 nn = getConvolutionNeuralNetwork(trainer);
-                System.out.print("standard");
+                System.out.println("cnn)");
                 break;
             case "small-cnn":
                 nn = getSmallConvolutionNeuralNetwork(trainer);
-                System.out.print("standard");
+                System.out.println("small-cnn)");
                 break;
             default:
                 nn = getStandardNeuralNetwork(trainer);
-                System.out.print("default-standard");
+                System.out.println("default-standard)");
         }
 
         trainer.setBatchSize(60);
