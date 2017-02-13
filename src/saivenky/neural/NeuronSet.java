@@ -5,7 +5,7 @@ package saivenky.neural;
  */
 public class NeuronSet implements Spatial3DStructure {
     INeuron[] neurons;
-    public int[] selected;
+    int[] selected;
 
     private int width;
     private int height;
@@ -37,12 +37,6 @@ public class NeuronSet implements Spatial3DStructure {
     public void activate() {
         for(int i : selected) {
             neurons[i].activate();
-        }
-    }
-
-    public void activateScaled(double scale) {
-        for(int i = 0; i < neurons.length; i++) {
-            neurons[i].activateScaled(scale);
         }
     }
 

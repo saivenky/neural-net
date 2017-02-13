@@ -31,12 +31,10 @@ public class StandardLayer extends Layer implements IDropoutLayer {
 
     @Override
     public void run() {
-        runWithoutDropout();
-    }
-
-    public void runWithoutDropout() {
         double scale = signalScaleFromDropout(dropoutRate);
-        neurons.activateScaled(scale);
+        for(int i = 0; i < neurons.size(); i++) {
+            neurons.get(i).activateScaled(scale);
+        }
     }
 
     public void setDropoutRate(double dropoutRate) {
