@@ -29,11 +29,21 @@ class NeuronProperties {
     }
 
     double affine(NeuronSet input) {
-        return affine(weights, input, bias);
+        double sum = 0;
+        for(int i = 0; i < weights.length; i++) {
+            sum += weights[i] * input.get(i).getActivation();
+        }
+
+        return sum + bias;
     }
 
     double affineForSelected(NeuronSet input) {
-        return affineForSelected(weights, input, bias);
+        double sum = 0;
+        for(int i : input.selected) {
+            sum += weights[i] * input.get(i).getActivation();
+        }
+
+        return sum + bias;
     }
 
     synchronized void update(double rate) {
@@ -43,24 +53,18 @@ class NeuronProperties {
         biasCostGradient = 0;
     }
 
-    private static double affine(double[] weight, NeuronSet input, double bias) {
-        double sum = 0;
-        for(int i = 0; i < weight.length; i++) {
-            sum += weight[i] * input.get(i).getActivation();
+    void addError(NeuronSet inputNeurons, double cost) {
+        biasCostGradient += cost;
+        for(int i : inputNeurons.selected) {
+            weightCostGradient[i] += inputNeurons.get(i).getActivation() * cost;
         }
-        return sum + bias;
     }
 
-    private static double affineForSelected(double[] weight, NeuronSet input, double bias) {
-        if(input.selected == null) {
-            return affine(weight, input, bias);
-        }
+    double[] getWeights() {
+        return weights;
+    }
 
-        double sum = 0;
-        for(int i : input.selected) {
-            sum += weight[i] * input.get(i).getActivation();
-        }
-
-        return sum + bias;
+    double getBias() {
+        return bias;
     }
 }

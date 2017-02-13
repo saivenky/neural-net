@@ -3,7 +3,7 @@ package saivenky.neural;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import saivenky.neural.neuron.ZeroInitializer;
+import saivenky.neural.neuron.CustomInitializer;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,6 +15,7 @@ public class NeuronPropertiesTests {
     private static final double PRECISION = 1e-7;
 
     private NeuronSet inputNeurons;
+    private CustomInitializer customInitializer;
 
     @BeforeEach
     void setUp() {
@@ -26,24 +27,14 @@ public class NeuronPropertiesTests {
         };
 
         inputNeurons = new NeuronSet(neuronArray);
-    }
-
-    @Test
-    void constructor_hasZeroCostGradients() {
-        NeuronProperties properties = new NeuronProperties(ZeroInitializer.getInstance(), inputNeurons.size());
-        assertEquals(inputNeurons.size(), properties.weights.length);
-        assertEquals(inputNeurons.size(), properties.weightCostGradient.length);
-        assertEquals(0, properties.biasCostGradient);
-        for(double weightCostGradient : properties.weightCostGradient) {
-            assertEquals(0, weightCostGradient);
-        }
+        customInitializer = new CustomInitializer();
+        customInitializer.addWeights(0.1, 0.2, 0.3, 0.4);
+        customInitializer.addBiases(100);
     }
 
     @Test
     void affine_evenWhenSelectedDoesAll() {
-        NeuronProperties properties = new NeuronProperties(ZeroInitializer.getInstance(), inputNeurons.size());
-        properties.weights = Vector.ize(0.1, 0.2, 0.3, 0.4);
-        properties.bias = 100;
+        NeuronProperties properties = new NeuronProperties(customInitializer, inputNeurons.size());
         int[] selected = {2};
         inputNeurons.select(selected);
         double result = 100 + 0.1 + 0.4 + 0.9 + 1.6;
@@ -52,9 +43,7 @@ public class NeuronPropertiesTests {
 
     @Test
     void affineForSelected_onlyForSelected() {
-        NeuronProperties properties = new NeuronProperties(ZeroInitializer.getInstance(), inputNeurons.size());
-        properties.weights = Vector.ize(0.1, 0.2, 0.3, 0.4);
-        properties.bias = 100;
+        NeuronProperties properties = new NeuronProperties(customInitializer, inputNeurons.size());
         int[] selected = {2};
         inputNeurons.select(selected);
         double result = 100 + 0.9;
@@ -63,30 +52,29 @@ public class NeuronPropertiesTests {
 
     @Test
     void update_noChangesWhenCostGradientsZero() {
-        NeuronProperties properties = new NeuronProperties(ZeroInitializer.getInstance(), inputNeurons.size());
-        properties.weights = Vector.ize(0.1, 0.2, 0.3, 0.4);
-        properties.bias = 100;
+        NeuronProperties properties = new NeuronProperties(customInitializer, inputNeurons.size());
         properties.update(0.1);
-        assertEquals(100, properties.bias);
-        Assertions.assertArrayEquals(Vector.ize(0.1, 0.2, 0.3, 0.4), properties.weights);
+        assertEquals(100, properties.getBias());
+        Assertions.assertArrayEquals(Vector.ize(0.1, 0.2, 0.3, 0.4), properties.getWeights());
     }
 
     @Test
     void update_subtractsAtRateAndZerosCostsAfterPropertiesChanged() {
-        NeuronProperties properties = new NeuronProperties(ZeroInitializer.getInstance(), inputNeurons.size());
-        properties.weights = Vector.ize(0.1, 0.2, 0.3, 0.4);
-        properties.bias = 100;
-        properties.weightCostGradient = Vector.ize(-1, -1, 2, 2);
-        properties.biasCostGradient = 3;
+        NeuronProperties properties = new NeuronProperties(customInitializer, inputNeurons.size());
+        properties.addError(inputNeurons, 2);
 
-        properties.update(0.1);
-        assertEquals(99.7, properties.bias);
-        Assertions.assertArrayEquals(Vector.ize(0.2, 0.3, 0.1, 0.2), properties.weights, PRECISION);
+        properties.update(0.5);
+        assertEquals(99, properties.getBias());
+        Assertions.assertArrayEquals(Vector.ize(-0.9, -1.8, -2.7, -3.6), properties.getWeights(), PRECISION);
 
-        assertEquals(0, properties.biasCostGradient);
-        for(double weightCostGradient : properties.weightCostGradient) {
-            assertEquals(0, weightCostGradient);
-        }
+        properties.update(0.5);
+        assertEquals(99, properties.getBias());
+        Assertions.assertArrayEquals(Vector.ize(-0.9, -1.8, -2.7, -3.6), properties.getWeights(), PRECISION);
+
+        properties.addError(inputNeurons, 2);
+        properties.update(0.5);
+        assertEquals(98, properties.getBias());
+        Assertions.assertArrayEquals(Vector.ize(-1.9, -3.8, -5.7, -7.6), properties.getWeights(), PRECISION);
     }
 
     //TODO get mocking framework
@@ -94,7 +82,7 @@ public class NeuronPropertiesTests {
 
         private double activation;
 
-        public FakeNeuron(double activation) {
+        FakeNeuron(double activation) {
 
             this.activation = activation;
         }

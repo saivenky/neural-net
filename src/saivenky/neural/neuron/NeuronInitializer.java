@@ -4,12 +4,14 @@ package saivenky.neural.neuron;
  * Created by saivenky on 1/28/17.
  */
 public class NeuronInitializer {
-    private Function biasInitializer;
-    private Function weightInitializer;
+    protected Function biasInitializer;
+    protected Function weightInitializer;
 
     public static abstract class Function {
         public abstract double f();
     }
+
+    protected NeuronInitializer() {}
 
     public NeuronInitializer(Function biasInitializer, Function weightInitializer) {
         this.biasInitializer = biasInitializer;

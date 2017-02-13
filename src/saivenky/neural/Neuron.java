@@ -52,14 +52,11 @@ public class Neuron implements INeuron {
     }
 
     private void backpropagateToInputNeurons() {
-        inputNeurons.addSignalCostGradient(properties.weights, signalCostGradient);
+        inputNeurons.addSignalCostGradient(properties.getWeights(), signalCostGradient);
     }
 
     private void updateGradient() {
-        properties.biasCostGradient += signalCostGradient;
-        for(int i : inputNeurons.selected) {
-            properties.weightCostGradient[i] += inputNeurons.get(i).getActivation() * signalCostGradient;
-        }
+        properties.addError(inputNeurons, signalCostGradient);
     }
 
     public void backpropagate(boolean backpropagateToInputNeurons) {
