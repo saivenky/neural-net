@@ -4,6 +4,7 @@ import saivenky.neural.Data;
 import saivenky.neural.image.DataUtils;
 
 import java.io.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by saivenky on 1/28/17.
@@ -16,7 +17,14 @@ class MnistReader {
         int numBytesRead = 0;
 
         try {
-            numBytesRead = stream.read(rawBytes);
+            int tries = 0;
+            while (numBytesRead != totalBytes) {
+                numBytesRead += stream.read(rawBytes, numBytesRead, rawBytes.length - numBytesRead);
+                tries++;
+                if (tries > 3) {
+                    throw new RuntimeException("unable to read all pixels for image within 3 tries");
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,7 +47,7 @@ class MnistReader {
     }
 
     private static double[][] readImages(File imagesFile) throws IOException {
-        DataInputStream dis = new DataInputStream(new FileInputStream(imagesFile));
+        DataInputStream dis = new DataInputStream(new GZIPInputStream(new FileInputStream(imagesFile)));
         dis.readInt(); //magic num
         int numImages = dis.readInt();
         int rows = dis.readInt();
@@ -54,7 +62,7 @@ class MnistReader {
     }
 
     private static int[] readLabels(File labelsFile) throws IOException {
-        DataInputStream dis = new DataInputStream(new FileInputStream(labelsFile));
+        DataInputStream dis = new DataInputStream(new GZIPInputStream(new FileInputStream(labelsFile)));
         dis.readInt(); //magic num
         int numLabels = dis.readInt();
 

@@ -7,8 +7,10 @@ import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.ImageWriter;
 import saivenky.neural.neuron.GaussianInitializer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import static saivenky.neural.mnist.MnistReader.loadMnist;
 
@@ -25,6 +27,10 @@ public class MnistTester {
         String testImagesFilePath = args[2];
         String testLabelsFilePath = args[3];
         String outputDirectoryPath = args[4];
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String networkType = br.readLine().toLowerCase().intern();
+
         File outputDir = MnistReader.getRealFile(outputDirectoryPath);
 
         Data.Example[] trainingData = loadMnist(trainImagesFilePath, trainLabelsFilePath);
@@ -37,7 +43,24 @@ public class MnistTester {
 
         System.out.print("Initializing network");
         NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(trainingData);
-        NeuralNetwork nn = getConvolutionNeuralNetwork(trainer);
+        NeuralNetwork nn;
+        switch(networkType) {
+            case "standard":
+                nn = getStandardNeuralNetwork(trainer);
+                System.out.print("standard");
+                break;
+            case "cnn":
+                nn = getConvolutionNeuralNetwork(trainer);
+                System.out.print("standard");
+                break;
+            case "small-cnn":
+                nn = getSmallConvolutionNeuralNetwork(trainer);
+                System.out.print("standard");
+                break;
+            default:
+                nn = getStandardNeuralNetwork(trainer);
+                System.out.print("default-standard");
+        }
 
         trainer.setBatchSize(60);
         final boolean[] shouldEvaluateBatch = {true};
@@ -50,6 +73,7 @@ public class MnistTester {
         }, new NeuralNetworkTrainer.Evaluator() {
             @Override
             public void f(int iteration, long timeTaken) {
+                if (timeTaken < 30) return;
                 if (shouldEvaluateBatch[0]) {
                     double accuracy = checkLabels(nn, testData, testLabels, 100);
                     System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double)timeTaken / 1000, accuracy);
