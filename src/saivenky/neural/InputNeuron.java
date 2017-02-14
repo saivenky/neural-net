@@ -35,6 +35,16 @@ public class InputNeuron implements INeuron {
     }
 
     @Override
+    public void setSignalCostGradient(double cost) {
+
+    }
+
+    @Override
+    public void addToSignalCostGradient(double cost) {
+
+    }
+
+    @Override
     public void addToSignalCostGradient(double weight, double cost) {
 
     }

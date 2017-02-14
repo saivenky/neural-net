@@ -12,6 +12,8 @@ public interface INeuron {
 
     void gradientDescent(double rate);
 
+    void setSignalCostGradient(double cost);
+    void addToSignalCostGradient(double cost);
     void addToSignalCostGradient(double weight, double cost);
 
     void backpropagate(boolean backpropagateToInputNeurons);

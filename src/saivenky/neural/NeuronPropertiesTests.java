@@ -108,6 +108,16 @@ public class NeuronPropertiesTests {
         }
 
         @Override
+        public void setSignalCostGradient(double cost) {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public void addToSignalCostGradient(double cost) {
+            throw new NotImplementedException();
+        }
+
+        @Override
         public void addToSignalCostGradient(double weight, double cost) {
             throw new NotImplementedException();
         }

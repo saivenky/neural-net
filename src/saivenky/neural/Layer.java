@@ -32,7 +32,7 @@ public abstract class Layer implements ILayer {
 
     public void setSignalCostGradient(double[] cost) {
         for (int i = 0; i < neurons.size(); i++) {
-            neurons.get(i).addToSignalCostGradient(1, cost[i]);
+            neurons.get(i).setSignalCostGradient(cost[i]);
         }
     }
 }

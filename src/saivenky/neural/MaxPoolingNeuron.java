@@ -20,7 +20,6 @@ public class MaxPoolingNeuron implements INeuron {
 
     public void activate() {
         activation = 0;
-        indexOfMaxInputNeuron = -1;
         for (int i = 0; i < inputNeurons.size(); i++) {
             double inputNeuronActivation = inputNeurons.get(i).getActivation();
             if(inputNeuronActivation > activation) {
@@ -37,9 +36,19 @@ public class MaxPoolingNeuron implements INeuron {
 
     public void gradientDescent(double rate) {}
 
+    @Override
+    public void setSignalCostGradient(double cost) {
+        inputNeurons.get(indexOfMaxInputNeuron).setSignalCostGradient(cost);
+    }
+
+    @Override
+    public void addToSignalCostGradient(double cost) {
+        inputNeurons.get(indexOfMaxInputNeuron).addToSignalCostGradient(cost);
+    }
+
     public void addToSignalCostGradient(double weight, double cost) {
         double poolCost = weight * cost;
-        inputNeurons.get(indexOfMaxInputNeuron).addToSignalCostGradient(1, poolCost);
+        inputNeurons.get(indexOfMaxInputNeuron).addToSignalCostGradient(poolCost);
     }
 
     public void backpropagate(boolean backPropagateToInputNeurons) {}
