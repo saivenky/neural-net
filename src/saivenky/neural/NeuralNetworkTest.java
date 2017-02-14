@@ -20,52 +20,6 @@ public class NeuralNetworkTest {
     }
 
     @Test
-    void SingleNeuron() {
-        int[] layers = {1, 1};
-        NeuralNetwork nn = new NeuralNetwork(
-                layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.bias = 0.6;
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0] = 0.9;
-
-        Data.Example e = new Data.Example(Vector.ize(1), Vector.ize(0));
-        nn.train(e.input, e.output);
-
-        assertSimilar(0.8175, nn.predicted[0]);
-        assertEquals(0.6, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertEquals(0.9, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
-
-        assertSimilar(0.1219, ((Neuron)nn.layers[0].neurons.get(0)).properties.biasCostGradient);
-        assertSimilar(0.1219, ((Neuron)nn.layers[0].neurons.get(0)).properties.weightCostGradient[0]);
-
-        nn.update(0.5);
-        assertSimilar(0.5390, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertSimilar(0.8390, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
-    }
-
-    @Test
-    void SingleNeuron_NegativeWeights() {
-        int[] layers = {1, 1};
-        NeuralNetwork nn = new NeuralNetwork(
-                layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.bias = -0.9;
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0] = -0.6;
-
-        Data.Example e = new Data.Example(Vector.ize(0.1), Vector.ize(1));
-        nn.train(e.input, e.output);
-
-        assertSimilar(0.2769, nn.predicted[0]);
-        assertEquals(-0.9, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertEquals(-0.6, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
-
-        assertSimilar(-0.1448, ((Neuron)nn.layers[0].neurons.get(0)).properties.biasCostGradient);
-        assertSimilar(-0.01448, ((Neuron)nn.layers[0].neurons.get(0)).properties.weightCostGradient[0]);
-
-        nn.update(0.5);
-        assertSimilar(-0.8276, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertSimilar(-0.5928, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
-    }
-
-    @Test
     void SingleNeuron_TwoExamples() {
         int[] layers = {1, 1};
         NeuralNetwork nn = new NeuralNetwork(

@@ -8,11 +8,11 @@ import saivenky.neural.neuron.NeuronInitializer;
  */
 public class Neuron implements INeuron {
     final NeuronProperties properties;
-    final NeuronSet inputNeurons;
-    final ActivationFunction activationFunction;
-    double activation;
-    double activation1;
-    double signalCostGradient;
+    private final NeuronSet inputNeurons;
+    private final ActivationFunction activationFunction;
+    private double activation;
+    private double activation1;
+    private double signalCostGradient;
 
     Neuron(NeuronProperties properties, NeuronSet inputNeurons, ActivationFunction activationFunction) {
         this.properties = properties;
