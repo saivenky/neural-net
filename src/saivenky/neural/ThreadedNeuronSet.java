@@ -1,8 +1,7 @@
 package saivenky.neural;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
+import saivenky.neural.threading.SplitRunnable;
+import saivenky.neural.threading.ThreadPool;
 
 /**
  * Created by saivenky on 2/6/17.
@@ -10,31 +9,32 @@ import java.util.concurrent.*;
 public class ThreadedNeuronSet extends NeuronSet {
     private static int N_THREADS = 2;
 
+    private static final ThreadPool pool;
+
     static {
         Runtime runtime = Runtime.getRuntime();
         N_THREADS = runtime.availableProcessors();
+        pool = new ThreadPool(N_THREADS);
     }
-
-    private final ExecutorService pool;
-    private List<SplitActivateExecutor> activateExecutors;
-    private List<SplitAddCostExecutor> addCostExecutors;
-    private List<SplitDescentExecutor> descentExecutors;
+    private SplitActivateExecutor[] activateExecutors;
+    private SplitAddCostExecutor[] addCostExecutors;
+    private SplitDescentExecutor[] descentExecutors;
 
     ThreadedNeuronSet(INeuron[] neurons) {
         super(neurons);
-        pool = Executors.newFixedThreadPool(N_THREADS);
-        activateExecutors = new ArrayList<>();
-        addCostExecutors = new ArrayList<>();
-        descentExecutors = new ArrayList<>();
+
+        activateExecutors = new SplitActivateExecutor[N_THREADS];
+        addCostExecutors = new SplitAddCostExecutor[N_THREADS];
+        descentExecutors = new SplitDescentExecutor[N_THREADS];
         for(int i = 0; i < N_THREADS; i++) {
-            activateExecutors.add(new SplitActivateExecutor(N_THREADS, i));
-            addCostExecutors.add(new SplitAddCostExecutor(N_THREADS, i));
-            descentExecutors.add(new SplitDescentExecutor(N_THREADS, i));
+            activateExecutors[i] = new SplitActivateExecutor(N_THREADS, i);
+            addCostExecutors[i] = new SplitAddCostExecutor(N_THREADS, i);
+            descentExecutors[i] = new SplitDescentExecutor(N_THREADS, i);
         }
     }
 
     public void activate() {
-        executeOnThreads(pool, activateExecutors);
+        pool.runAllAndWait(activateExecutors);
     }
 
     public void backpropagate(boolean backpropagateToInputNeurons) {
@@ -42,7 +42,7 @@ public class ThreadedNeuronSet extends NeuronSet {
             addCostExecutor.setInput(backpropagateToInputNeurons);
         }
 
-        executeOnThreads(pool, addCostExecutors);
+        pool.runAllAndWait(addCostExecutors);
     }
 
     public void gradientDescent(double rate) {
@@ -50,59 +50,25 @@ public class ThreadedNeuronSet extends NeuronSet {
             descentExecutor.setInput(rate);
         }
 
-        executeOnThreads(pool, descentExecutors);
+        pool.runAllAndWait(descentExecutors);
     }
 
-    private static void executeOnThreads(ExecutorService pool, List<? extends Callable<Integer>> callables) {
-        List<Future<Integer>> futures = null;
-        try {
-            futures = pool.invokeAll(callables);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if(futures == null) {
-            throw new RuntimeException("thread pool did not successfully invokeAll");
-        }
-
-        for(Future<Integer> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class SplitActivateExecutor implements Callable<Integer> {
-        private int mod;
-        private int splitId;
-
+    public class SplitActivateExecutor extends SplitRunnable {
         public SplitActivateExecutor(int mod, int splitId) {
-            this.mod = mod;
-            this.splitId = splitId;
+            super(neurons.length, mod, splitId);
         }
 
         @Override
-        public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
-                if (i % mod == splitId) neurons[i].activate();
-            }
-
-            return 0;
+        public void singleTask(int i) {
+            neurons[i].activate();
         }
     }
 
-    public class SplitAddCostExecutor implements Callable<Integer> {
-        private int mod;
-        private int splitId;
+    public class SplitAddCostExecutor extends SplitRunnable {
         private boolean backpropagateToInputNeurons;
 
         public SplitAddCostExecutor(int mod, int splitId) {
-            this.mod = mod;
-            this.splitId = splitId;
+            super(neurons.length, mod, splitId);
         }
 
         public void setInput(boolean backpropagateToInputNeurons) {
@@ -110,25 +76,16 @@ public class ThreadedNeuronSet extends NeuronSet {
         }
 
         @Override
-        public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
-                if (i % mod == splitId) {
-                    neurons[i].backpropagate(backpropagateToInputNeurons);
-                }
-            }
-
-            return 0;
+        public void singleTask(int i) {
+            neurons[i].backpropagate(backpropagateToInputNeurons);
         }
     }
 
-    public class SplitDescentExecutor implements Callable<Integer> {
-        private int mod;
-        private int splitId;
+    public class SplitDescentExecutor extends SplitRunnable {
         private double rate;
 
         public SplitDescentExecutor(int mod, int splitId) {
-            this.mod = mod;
-            this.splitId = splitId;
+            super(neurons.length, mod, splitId);
         }
 
         public void setInput(double rate) {
@@ -136,14 +93,8 @@ public class ThreadedNeuronSet extends NeuronSet {
         }
 
         @Override
-        public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
-                if (i % mod == splitId) {
-                    neurons[i].gradientDescent(rate);
-                }
-            }
-
-            return 0;
+        public void singleTask(int i) {
+            neurons[i].gradientDescent(rate);
         }
     }
 }
