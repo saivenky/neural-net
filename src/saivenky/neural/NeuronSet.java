@@ -5,7 +5,6 @@ package saivenky.neural;
  */
 public class NeuronSet implements Spatial3DStructure {
     INeuron[] neurons;
-    protected int[] selected;
 
     private int width;
     private int height;
@@ -14,12 +13,6 @@ public class NeuronSet implements Spatial3DStructure {
 
     public NeuronSet(INeuron[] neurons) {
         this.neurons = neurons;
-        selected = new int[neurons.length];
-        Vector.select(selected, neurons.length);
-    }
-
-    void select(int[] selected) {
-        this.selected = selected;
     }
 
     public INeuron get(int index) {
@@ -35,32 +28,32 @@ public class NeuronSet implements Spatial3DStructure {
     }
 
     public void activate() {
-        for(int i : selected) {
-            neurons[i].activate();
+        for(INeuron neuron : neurons) {
+            neuron.activate();
         }
     }
 
     public void backpropagate(boolean backpropagateToInputNeurons) {
-        for(int i : selected) {
-            neurons[i].backpropagate(backpropagateToInputNeurons);
+        for(INeuron neuron : neurons) {
+            neuron.backpropagate(backpropagateToInputNeurons);
         }
     }
 
     public void gradientDescent(double rate) {
-        for(int i : selected) {
-            neurons[i].gradientDescent(rate);
+        for(INeuron neuron : neurons) {
+            neuron.gradientDescent(rate);
         }
     }
 
     public void addSignalCostGradient(double[] weight, double cost) {
-        for(int i : selected) {
+        for(int i = 0; i < neurons.length; i++) {
             neurons[i].addToSignalCostGradient(weight[i], cost);
         }
     }
 
     public double affine(double[] weight, double bias) {
         double sum = 0;
-        for(int i : selected) {
+        for(int i = 0; i < neurons.length; i++) {
             sum += weight[i] * neurons[i].getActivation();
         }
 
@@ -68,7 +61,7 @@ public class NeuronSet implements Spatial3DStructure {
     }
 
     public void addToWeightError(double[] weightError, double cost) {
-        for(int i : selected) {
+        for(int i = 0; i < neurons.length; i++) {
             weightError[i] += neurons[i].getActivation() * cost;
         }
     }

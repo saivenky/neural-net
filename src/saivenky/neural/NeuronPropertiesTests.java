@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class NeuronPropertiesTests {
     private static final double PRECISION = 1e-7;
 
-    private NeuronSet inputNeurons;
+    private DropoutNeuronSet inputNeurons;
     private CustomInitializer customInitializer;
 
     @BeforeEach
@@ -26,7 +26,7 @@ public class NeuronPropertiesTests {
                 new FakeNeuron(4)
         };
 
-        inputNeurons = new NeuronSet(neuronArray);
+        inputNeurons = new DropoutNeuronSet(neuronArray);
         customInitializer = new CustomInitializer();
         customInitializer.addWeights(0.1, 0.2, 0.3, 0.4);
         customInitializer.addBiases(100);

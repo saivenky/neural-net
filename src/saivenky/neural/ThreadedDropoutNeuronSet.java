@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 /**
  * Created by saivenky on 2/6/17.
  */
-public class ThreadedNeuronSet extends NeuronSet {
+public class ThreadedDropoutNeuronSet extends DropoutNeuronSet {
     private static int N_THREADS = 2;
 
     static {
@@ -20,7 +20,7 @@ public class ThreadedNeuronSet extends NeuronSet {
     private List<SplitAddCostExecutor> addCostExecutors;
     private List<SplitDescentExecutor> descentExecutors;
 
-    ThreadedNeuronSet(INeuron[] neurons) {
+    ThreadedDropoutNeuronSet(INeuron[] neurons) {
         super(neurons);
         pool = Executors.newFixedThreadPool(N_THREADS);
         activateExecutors = new ArrayList<>();
@@ -87,7 +87,7 @@ public class ThreadedNeuronSet extends NeuronSet {
 
         @Override
         public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
+            for(int i : selected) {
                 if (i % mod == splitId) neurons[i].activate();
             }
 
@@ -111,7 +111,7 @@ public class ThreadedNeuronSet extends NeuronSet {
 
         @Override
         public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
+            for(int i : selected) {
                 if (i % mod == splitId) {
                     neurons[i].backpropagate(backpropagateToInputNeurons);
                 }
@@ -137,7 +137,7 @@ public class ThreadedNeuronSet extends NeuronSet {
 
         @Override
         public Integer call() throws Exception {
-            for(int i = 0; i < neurons.length; i++) {
+            for(int i : selected) {
                 if (i % mod == splitId) {
                     neurons[i].gradientDescent(rate);
                 }
