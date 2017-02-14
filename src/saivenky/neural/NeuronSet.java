@@ -5,7 +5,7 @@ package saivenky.neural;
  */
 public class NeuronSet implements Spatial3DStructure {
     INeuron[] neurons;
-    int[] selected;
+    protected int[] selected;
 
     private int width;
     private int height;
@@ -55,6 +55,21 @@ public class NeuronSet implements Spatial3DStructure {
     public void addSignalCostGradient(double[] weight, double cost) {
         for(int i : selected) {
             neurons[i].addToSignalCostGradient(weight[i], cost);
+        }
+    }
+
+    public double affine(double[] weight, double bias) {
+        double sum = 0;
+        for(int i : selected) {
+            sum += weight[i] * neurons[i].getActivation();
+        }
+
+        return sum + bias;
+    }
+
+    public void addToWeightError(double[] weightError, double cost) {
+        for(int i : selected) {
+            weightError[i] += neurons[i].getActivation() * cost;
         }
     }
 

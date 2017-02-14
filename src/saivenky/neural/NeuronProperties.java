@@ -28,22 +28,17 @@ class NeuronProperties {
         weightCostGradient = new double[inputSize];
     }
 
-    double affine(NeuronSet input) {
+    public double affine(NeuronSet inputNeurons) {
         double sum = 0;
-        for(int i = 0; i < weights.length; i++) {
-            sum += weights[i] * input.get(i).getActivation();
+        for(int i = 0; i < inputNeurons.size(); i++) {
+            sum += weights[i] * inputNeurons.get(i).getActivation();
         }
 
         return sum + bias;
     }
 
-    double affineForSelected(NeuronSet input) {
-        double sum = 0;
-        for(int i : input.selected) {
-            sum += weights[i] * input.get(i).getActivation();
-        }
-
-        return sum + bias;
+    public double affineForSelected(NeuronSet inputNeurons) {
+        return inputNeurons.affine(weights, bias);
     }
 
     synchronized void update(double rate) {
@@ -55,9 +50,7 @@ class NeuronProperties {
 
     void addError(NeuronSet inputNeurons, double cost) {
         biasCostGradient += cost;
-        for(int i : inputNeurons.selected) {
-            weightCostGradient[i] += inputNeurons.get(i).getActivation() * cost;
-        }
+        inputNeurons.addToWeightError(weightCostGradient, cost);
     }
 
     double[] getWeights() {
