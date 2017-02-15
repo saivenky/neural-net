@@ -13,13 +13,13 @@ import static saivenky.neural.NeuralNetworkTrainer.NullEvaluator;
  * Created by saivenky on 1/26/17.
  */
 public class NeuralNetwork {
-    Layer[] layers;
+    ILayer[] layers;
 
     private int trainedExamples;
 
     public double[] predicted;
     private CostFunction costFunction;
-    private Layer outputLayer;
+    private ILayer outputLayer;
     private InputLayer inputLayer;
 
     public NeuralNetwork(
@@ -38,22 +38,22 @@ public class NeuralNetwork {
         }
 
         outputLayer = layers[layers.length - 1];
-        predicted = new double[outputLayer.neurons.size()];
+        predicted = new double[outputLayer.getNeurons().size()];
     }
 
     private void updatePredicted() {
-        for(int i = 0; i < outputLayer.neurons.size(); i++) {
-            predicted[i] = outputLayer.neurons.get(i).getActivation();
+        for(int i = 0; i < outputLayer.getNeurons().size(); i++) {
+            predicted[i] = outputLayer.getNeurons().get(i).getActivation();
         }
     }
 
-    public NeuralNetwork(InputLayer inputLayer, CostFunction costFunction, Layer ... layers) {
+    public NeuralNetwork(InputLayer inputLayer, CostFunction costFunction, ILayer ... layers) {
         this.inputLayer = inputLayer;
         this.costFunction = costFunction;
         this.layers = layers;
         outputLayer = layers[layers.length - 1];
         trainedExamples = 0;
-        if (outputLayer != null) predicted = new double[outputLayer.neurons.size()];
+        if (outputLayer != null) predicted = new double[outputLayer.getNeurons().size()];
     }
 
     public void run(double[] input) {
@@ -84,7 +84,7 @@ public class NeuralNetwork {
     }
 
     void update(double learningRate) {
-        for (Layer layer : layers) {
+        for (ILayer layer : layers) {
             layer.gradientDescent(learningRate / trainedExamples);
         }
 
@@ -98,7 +98,7 @@ public class NeuralNetwork {
     }
 
     void reselectDropouts() {
-        for (Layer l : layers) {
+        for (ILayer l : layers) {
             if (l instanceof IDropoutLayer) {
                 ((IDropoutLayer)l).reselectDropout();
             }

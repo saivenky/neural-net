@@ -24,23 +24,23 @@ public class NeuralNetworkTest {
         int[] layers = {1, 1};
         NeuralNetwork nn = new NeuralNetwork(
                 layers, Sigmoid.getInstance(), Square.getInstance(), new ZeroInitializer());
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.bias = 0.6;
-        ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0] = 0.9;
+        ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias = 0.6;
+        ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0] = 0.9;
 
         Data.Example e = new Data.Example(Vector.ize(1), Vector.ize(0));
         nn.train(e.input, e.output);
         nn.train(e.input, e.output);
 
         assertSimilar(0.8175, nn.predicted[0]);
-        assertEquals(0.6, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertEquals(0.9, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
+        assertEquals(0.6, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias);
+        assertEquals(0.9, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0]);
 
-        assertSimilar(0.2438, ((Neuron)nn.layers[0].neurons.get(0)).properties.biasCostGradient);
-        assertSimilar(0.2438, ((Neuron)nn.layers[0].neurons.get(0)).properties.weightCostGradient[0]);
+        assertSimilar(0.2438, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.biasCostGradient);
+        assertSimilar(0.2438, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weightCostGradient[0]);
 
         nn.update(0.5);
-        assertSimilar(0.5390, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-        assertSimilar(0.8390, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
+        assertSimilar(0.5390, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias);
+        assertSimilar(0.8390, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0]);
     }
 
     @Test
@@ -51,22 +51,22 @@ public class NeuralNetworkTest {
         Data.Example e = new Data.Example(Vector.ize(1), Vector.ize(0));
 
         for(int i = 0; i < 100; i++) {
-            ((Neuron)nn.layers[0].neurons.get(0)).properties.bias = 0.6;
-            ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0] = 0.9;
+            ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias = 0.6;
+            ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0] = 0.9;
 
             nn.train(e.input, e.output);
             nn.train(e.input, e.output);
 
             assertSimilar(0.8175, nn.predicted[0]);
-            assertEquals(0.6, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-            assertEquals(0.9, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
+            assertEquals(0.6, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias);
+            assertEquals(0.9, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0]);
 
-            assertSimilar(0.2438, ((Neuron)nn.layers[0].neurons.get(0)).properties.biasCostGradient);
-            assertSimilar(0.2438, ((Neuron)nn.layers[0].neurons.get(0)).properties.weightCostGradient[0]);
+            assertSimilar(0.2438, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.biasCostGradient);
+            assertSimilar(0.2438, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weightCostGradient[0]);
 
             nn.update(0.5);
-            assertSimilar(0.5390, ((Neuron)nn.layers[0].neurons.get(0)).properties.bias);
-            assertSimilar(0.8390, ((Neuron)nn.layers[0].neurons.get(0)).properties.weights[0]);
+            assertSimilar(0.5390, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.bias);
+            assertSimilar(0.8390, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weights[0]);
         }
     }
 
@@ -94,11 +94,11 @@ public class NeuralNetworkTest {
                 }
             });
 
-            assertSimilar(0.1296, ((Neuron)nn.layers[1].neurons.get(0)).properties.biasCostGradient);
-            assertSimilar(0.1060, ((Neuron)nn.layers[1].neurons.get(0)).properties.weightCostGradient[0]);
+            assertSimilar(0.1296, ((Neuron)nn.layers[1].getNeurons().get(0)).properties.biasCostGradient);
+            assertSimilar(0.1060, ((Neuron)nn.layers[1].getNeurons().get(0)).properties.weightCostGradient[0]);
 
-            assertSimilar(0.01546, ((Neuron)nn.layers[0].neurons.get(0)).properties.biasCostGradient);
-            assertSimilar(0.01546, ((Neuron)nn.layers[0].neurons.get(0)).properties.weightCostGradient[0]);
+            assertSimilar(0.01546, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.biasCostGradient);
+            assertSimilar(0.01546, ((Neuron)nn.layers[0].getNeurons().get(0)).properties.weightCostGradient[0]);
 
             nn.update(0.5);
             double[][] expectedBiases = {{0.5923}, {0.6352}};
@@ -142,9 +142,9 @@ public class NeuralNetworkTest {
 
             assertSimilar(0.4298, nn.predicted[0]);
 
-            //assertSimilar(0.1053, nn.layers[1].neurons.get(0).signalCostGradient);
-            //assertSimilar(0.006411, nn.layers[0].neurons.get(0).signalCostGradient);
-            //assertSimilar(-0.014497, nn.layers[0].neurons.get(1).signalCostGradient);
+            //assertSimilar(0.1053, nn.layers[1].getNeurons().get(0).signalCostGradient);
+            //assertSimilar(0.006411, nn.layers[0].getNeurons().get(0).signalCostGradient);
+            //assertSimilar(-0.014497, nn.layers[0].getNeurons().get(1).signalCostGradient);
 
             nn.update(0.5);
 
@@ -229,29 +229,29 @@ public class NeuralNetworkTest {
         NeuronSet input = new NeuronSet(new INeuron[2 * 2]);
         input.setShape(2, 2, 1);
         InputLayer inputLayer = new InputLayer(input);
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+        ArrayImplConvolutionLayer convolutionLayer = new ArrayImplConvolutionLayer(
                 1, 1, 1, inputLayer, Linear.getInstance(), ZeroInitializer.getInstance());
         MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
         StandardLayer outputLayer = new StandardLayer(
                 1, poolingLayer, Linear.getInstance(), ZeroInitializer.getInstance(), 0);
-        ((Neuron)convolutionLayer.neurons.get(0)).properties.weights = Vector.ize(1);
-        ((Neuron)convolutionLayer.neurons.get(0)).properties.bias = 0;
-        ((Neuron)outputLayer.neurons.get(0)).properties.weights = Vector.ize(1);
+        convolutionLayer.properties[0].weights = Vector.ize(1);
+        convolutionLayer.properties[0].bias = 0;
+        ((Neuron)outputLayer.getNeurons().get(0)).properties.weights = Vector.ize(1);
         NeuralNetwork nn = new NeuralNetwork(inputLayer, Square.getInstance(), convolutionLayer, poolingLayer, outputLayer);
         nn.train(Vector.ize(0, 1, 0.1, 0), Vector.ize(0));
         nn.update(0.5);
 
-        assertEquals(0.5, ((Neuron)convolutionLayer.neurons.get(0)).properties.weights[0]);
-        assertEquals(-0.5, ((Neuron)convolutionLayer.neurons.get(0)).properties.bias);
+        assertEquals(0.5, convolutionLayer.properties[0].weights[0]);
+        assertEquals(-0.5, convolutionLayer.properties[0].bias);
     }
 
     private void setProperties(NeuralNetwork nn, double[][] biases, double[][][] weights) {
         for(int i = nn.layers.length - 1; i >= 0 ; i--) {
-            Layer layer = nn.layers[i];
+            ILayer layer = nn.layers[i];
             double[] layerBiases = biases[i];
             double[][] layerWeights = weights[i];
-            for(int j = 0; j < layer.neurons.size(); j++) {
-                NeuronProperties properties = ((Neuron)layer.neurons.get(j)).properties;
+            for(int j = 0; j < layer.getNeurons().size(); j++) {
+                NeuronProperties properties = ((Neuron)layer.getNeurons().get(j)).properties;
                 properties.bias = layerBiases[j];
 
                 double[] neuronWeights = layerWeights[j];
@@ -262,12 +262,12 @@ public class NeuralNetworkTest {
 
     private void checkProperties(NeuralNetwork nn, double[][] biases, double[][][] weights, ValueChecker valueChecker) {
         for(int i = nn.layers.length - 1; i >= 0 ; i--) {
-            Layer layer = nn.layers[i];
+            ILayer layer = nn.layers[i];
             double[] expectedLayerBiases = biases[i];
             double[][] expectedLayerWeights = weights[i];
-            for(int j = 0; j < layer.neurons.size(); j++) {
+            for(int j = 0; j < layer.getNeurons().size(); j++) {
                 String message = String.format("layer %d, neuron %d, ", i, j);
-                NeuronProperties properties = ((Neuron)layer.neurons.get(j)).properties;
+                NeuronProperties properties = ((Neuron)layer.getNeurons().get(j)).properties;
                 String biasMessage = message + "bias";
                 valueChecker.areEqual(expectedLayerBiases[j], properties.bias, biasMessage);
 

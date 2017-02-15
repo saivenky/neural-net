@@ -24,7 +24,6 @@ public abstract class SplitRunnable implements Runnable {
         int[] range = getRange(elements, totalSplits, splitNumber);
         start = range[0];
         end = range[1];
-        System.out.printf("total %d, split %d, range: [%d, %d)\n", totalSplits, splitNumber, start, end);
     }
 
     public void run() {
