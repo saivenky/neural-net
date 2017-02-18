@@ -48,12 +48,12 @@ public class Neuron implements INeuron {
     }
 
     @Override
-    public void setSignalCostGradient(double cost) {
+    public synchronized void setSignalCostGradient(double cost) {
         signalCostGradient = cost;
     }
 
     @Override
-    public void addToSignalCostGradient(double cost) {
+    public synchronized void addToSignalCostGradient(double cost) {
         signalCostGradient += cost;
     }
 

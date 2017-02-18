@@ -48,7 +48,7 @@ class NeuronProperties {
         biasCostGradient = 0;
     }
 
-    void addError(NeuronSet inputNeurons, double cost) {
+    synchronized void addError(NeuronSet inputNeurons, double cost) {
         biasCostGradient += cost;
         inputNeurons.addToWeightError(weightCostGradient, cost);
     }

@@ -47,17 +47,17 @@ public class BasicNeuron implements INeuron {
     }
 
     @Override
-    public void setSignalCostGradient(double cost) {
+    public synchronized void setSignalCostGradient(double cost) {
         error = cost;
     }
 
     @Override
-    public void addToSignalCostGradient(double cost) {
+    public synchronized void addToSignalCostGradient(double cost) {
         error += cost;
     }
 
     @Override
-    public void addToSignalCostGradient(double weight, double cost) {
+    public synchronized void addToSignalCostGradient(double weight, double cost) {
         error += weight * cost;
     }
 
