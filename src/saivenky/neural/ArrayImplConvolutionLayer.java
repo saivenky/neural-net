@@ -9,10 +9,10 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class ArrayImplConvolutionLayer implements ILayer {
 
-    private final int outputFrameLength;
     private final double[] signal;
-    private final double[] errors;
+    private final double[] inputError;
     private final double[] inputActivation;
+    private final double[] outputError;
     private int kernelWidth;
     private int kernelHeight;
     private final int kernelDepth;
@@ -22,6 +22,7 @@ public class ArrayImplConvolutionLayer implements ILayer {
     private final int outputWidth;
     private final int outputHeight;
     private final int outputDepth;
+    private int inputWidth;
     private final BasicNeuron[] neuronArray;
     private final NeuronSet neurons;
     private int kernelWidthHeight;
@@ -36,52 +37,56 @@ public class ArrayImplConvolutionLayer implements ILayer {
             int frames, int kernelWidth, int kernelHeight, ILayer previousLayer, ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
         this.frames = frames;
         input = previousLayer.getNeurons();
+        properties = new NeuronProperties[frames];
         this.kernelWidth = kernelWidth;
         this.kernelHeight = kernelHeight;
         this.kernelDepth = input.getDepth();
-        properties = new NeuronProperties[frames];
+        kernelWidthHeight = kernelWidth * kernelHeight;
+        kernelWidthHeightDepth = kernelWidth * kernelHeight * kernelDepth;
+
         outputWidth = FilterDimensionCalculator.calculateOutputSize(input.getWidth(), kernelWidth, 1);
         outputHeight = FilterDimensionCalculator.calculateOutputSize(input.getHeight(), kernelHeight, 1);
         outputDepth = FilterDimensionCalculator.calculateOutputSize(input.getDepth(), kernelDepth, 1);
+        outputWidthHeight = outputWidth * outputHeight;
+        outputWidthHeightDepth = outputWidth * outputHeight * outputDepth;
+
+        inputWidth = input.getWidth();
+        inputWidthHeight = input.getWidth() * input.getHeight();
 
         neuronArray = new BasicNeuron[outputWidth * outputHeight * outputDepth * frames];
         neurons = new NeuronSet(neuronArray);
-        outputFrameLength = outputWidth * outputHeight * outputDepth;
         for(int f = 0; f < frames; f++) {
             properties[f] = new NeuronProperties(neuronInitializer, kernelWidth * kernelHeight * input.getDepth());
-            int frameStart = f * outputFrameLength;
-            for(int i = 0; i < outputFrameLength; i++) {
+            int frameStart = f * outputWidthHeightDepth;
+            for(int i = 0; i < outputWidthHeightDepth; i++) {
                 neuronArray[frameStart + i] = new BasicNeuron(activationFunction);
             }
         }
 
         neurons.setShape(outputWidth, outputHeight, frames);
 
-        outputWidthHeight = outputWidth * outputHeight;
-        inputWidthHeight = input.getWidth() * input.getHeight();
-        kernelWidthHeight = kernelWidth * kernelHeight;
-        kernelWidthHeightDepth = kernelWidth * kernelHeight * kernelDepth;
-        outputWidthHeightDepth = outputWidth * outputHeight * outputDepth;
+
         signal = new double[outputWidth * outputHeight * outputDepth * frames];
-        errors = new double[input.getWidth() * input.getHeight() * input.getDepth()];
+        outputError = new double[outputWidth * outputHeight * outputDepth * frames];
+        inputError = new double[input.size()];
         inputActivation = new double[input.size()];
     }
 
     private void backpropogateNeuronError() {
         for (int frame = 0; frame < frames; frame++) {
-            int frameStart = frame * outputFrameLength;
+            int frameStart = frame * outputWidthHeightDepth;
             double[] weights = properties[frame].getWeights();
 
-            for (int x = 0; x < outputWidth; x++) {
-                for (int y = 0, outY = 0, inYInit = 0; y < outputHeight; y++, outY += outputWidth, inYInit += input.getWidth()) {
-                    for (int z = 0, outZ = 0, inZInit = 0; z < outputDepth; z++, outZ += outputWidthHeight, inZInit += inputWidthHeight) {
+            for (int outZ = 0, inZInit = 0; outZ < outputWidthHeightDepth; outZ += outputWidthHeight, inZInit += inputWidthHeight) {
+                for (int outY = 0, inYInit = 0; outY < outputWidthHeight; outY += outputWidth, inYInit += inputWidth) {
+                    for (int x = 0; x < outputWidth; x++) {
                         double neuronError = neuronArray[frameStart + x + outY + outZ].getError();
 
-                        for (int kx = 0, inX = x; kx < kernelWidth; kx++, inX++) {
-                            for (int ky = 0, inXY = inX + inYInit, kernY = 0; ky < kernelHeight; ky++, inXY += input.getWidth(), kernY += kernelWidth) {
-                                for (int kz = 0, inXYZ = inXY + inZInit, kernZ = 0; kz < kernelDepth; kz++, inXYZ += inputWidthHeight, kernZ += kernelWidthHeight) {
+                        for (int kz = 0, inZ = inZInit, kernZ = 0; kz < kernelDepth; kz++, inZ += inputWidthHeight, kernZ += kernelWidthHeight) {
+                            for (int ky = 0, inYZ = inZ + inYInit, kernY = 0; ky < kernelHeight; ky++, inYZ += input.getWidth(), kernY += kernelWidth) {
+                                for (int kx = 0, inXYZ = inYZ + x; kx < kernelWidth; kx++, inXYZ++) {
                                     double weight = weights[kernZ + kernY + kx];
-                                    errors[inXYZ] += weight * neuronError;
+                                    inputError[inXYZ] += weight * neuronError;
                                 }
                             }
                         }
@@ -91,35 +96,59 @@ public class ArrayImplConvolutionLayer implements ILayer {
         }
     }
 
-    private void applyConvolution(NeuronSet input) {
+    private void copyInputActivation() {
         for(int i = 0; i < input.size(); i++) {
             inputActivation[i] = input.get(i).getActivation();
         }
+    }
 
+    private void copyOutputError() {
+        for(int i = 0; i < neuronArray.length; i++) {
+            outputError[i] = neuronArray[i].getError();
+        }
+    }
+
+
+    private void applyConvolution() {
+        Thread[] threads = new Thread[frames];
         for(int frame = 0; frame < frames; frame++) {
-            int frameStart = frame * outputFrameLength;
-            double[] weights = properties[frame].getWeights();
-            double bias = properties[frame].getBias();
+            int finalFrame = frame;
+            threads[frame] = new Thread(() -> applyConvolutionForFrame(finalFrame));
+            threads[frame].start();
+        }
 
-            for (int x = 0; x < outputWidth; x++) {
-                for (int outY = 0, inYInit = 0; outY < outputWidthHeight; outY += outputWidth, inYInit += input.getWidth()) {
-                    for (int outZ = 0, inZInit = 0; outZ < outputWidthHeightDepth; outZ += outputWidthHeight, inZInit += inputWidthHeight) {
+        for(Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-                        double sum = 0;
-                        int outIndex = frameStart + outZ + outY + x;
-                        signal[outIndex] = bias;
-                        for (int kx = 0, inX = x; kx < kernelWidth; kx++, inX++) {
-                            for (int inXY = inX + inYInit, kernY = 0; kernY < kernelWidthHeight; inXY += input.getWidth(), kernY += kernelWidth) {
-                                for (int inXYZ = inXY + inZInit, kernZ = 0; kernZ < kernelWidthHeightDepth; inXYZ += inputWidthHeight, kernZ += kernelWidthHeight) {
-                                    double activation = inputActivation[inXYZ];
-                                    double weight = weights[kernZ + kernY + kx];
-                                    sum += activation * weight;
-                                }
+    private void applyConvolutionForFrame(int frame) {
+        int frameStart = frame * outputWidthHeightDepth;
+        double[] weights = properties[frame].getWeights();
+        double bias = properties[frame].getBias();
+        for (int outZ = 0, inZInit = 0; outZ < outputWidthHeightDepth; outZ += outputWidthHeight, inZInit += inputWidthHeight) {
+            for (int outY = 0, inYInit = 0; outY < outputWidthHeight; outY += outputWidth, inYInit += inputWidth) {
+                for (int x = 0; x < outputWidth; x++) {
+
+                    double sum = 0;
+                    int outIndex = frameStart + outZ + outY + x;
+                    signal[outIndex] = bias;
+                    for (int kz = 0, inZ = inZInit, kernZ = 0; kz < kernelDepth; kz++, inZ += inputWidthHeight, kernZ += kernelWidthHeight) {
+                        for (int ky = 0, inYZ = inZ + inYInit, kernY = 0; ky < kernelHeight; ky++, inYZ += input.getWidth(), kernY += kernelWidth) {
+                            for (int kx = 0, inXYZ = inYZ + x; kx < kernelWidth; kx++, inXYZ++) {
+                                double activation = inputActivation[inXYZ];
+                                double weight = weights[kernZ + kernY + kx];
+                                sum += activation * weight;
                             }
                         }
-
-                        signal[outIndex] += sum;
                     }
+
+                    signal[outIndex] += sum;
                 }
             }
         }
@@ -137,7 +166,8 @@ public class ArrayImplConvolutionLayer implements ILayer {
 
     @Override
     public void feedforward() {
-        applyConvolution(input);
+        copyInputActivation();
+        applyConvolution();
         for(int i = 0; i < neuronArray.length; i++) {
             neuronArray[i].setSignal(signal[i]);
         }
@@ -153,6 +183,7 @@ public class ArrayImplConvolutionLayer implements ILayer {
             basicNeuron.backpropagate(false);
         }
 
+        copyOutputError();
         backpropogateToProperties();
         if(backpropagateToPreviousLayer) {
             backpropogateNeuronError();
@@ -177,20 +208,24 @@ public class ArrayImplConvolutionLayer implements ILayer {
 
     private void backpropogateToProperties() {
         for(int frame = 0; frame < frames; frame++) {
-            int frameStart = frame * outputFrameLength;
-            NeuronProperties frameProperties = properties[frame];
-            for (int x = 0; x < outputWidth; x++) {
-                for (int outY = 0, inYInit = 0; outY < outputWidthHeight; outY += outputWidth, inYInit += input.getWidth()) {
-                    for (int outZ = 0, inZInit = 0; outZ < outputWidthHeightDepth; outZ += outputWidthHeight, inZInit += inputWidthHeight) {
-                        double error = neuronArray[frameStart + outZ + outY + x].getError();
-                        frameProperties.biasCostGradient += error;
+            backpropogateToPropertiesForSingleFrame(frame);
+        }
+    }
 
-                        for (int kx = 0, inX = x; kx < kernelWidth; kx++, inX++) {
-                            for (int ky = 0, inXY = inX + inYInit, kernY = 0; ky < kernelHeight; ky++, inXY += input.getWidth(), kernY += kernelWidth) {
-                                for (int kz = 0, inXYZ = inXY + inZInit, kernZ = 0; kz < kernelDepth; kz++, inXYZ += inputWidthHeight, kernZ += kernelWidthHeight) {
-                                    double activation = inputActivation[inXYZ];
-                                    frameProperties.weightCostGradient[kernZ + kernY + kx] += activation * error;
-                                }
+    private void backpropogateToPropertiesForSingleFrame(int frame) {
+        int frameStart = frame * outputWidthHeightDepth;
+        NeuronProperties frameProperties = properties[frame];
+        for (int outZ = 0, inZInit = 0; outZ < outputWidthHeightDepth; outZ += outputWidthHeight, inZInit += inputWidthHeight) {
+            for (int outY = 0, inYInit = 0; outY < outputWidthHeight; outY += outputWidth, inYInit += inputWidth) {
+                for (int x = 0; x < outputWidth; x++) {
+                    double error = outputError[frameStart + outZ + outY + x];
+                    frameProperties.biasCostGradient += error;
+
+                    for (int kz = 0, inZ = inZInit, kernZ = 0; kz < kernelDepth; kz++, inZ += inputWidthHeight, kernZ += kernelWidthHeight) {
+                        for (int ky = 0, inYZ = inZ + inYInit, kernY = 0; ky < kernelHeight; ky++, inYZ += input.getWidth(), kernY += kernelWidth) {
+                            for (int kx = 0, inXYZ = inYZ + x; kx < kernelWidth; kx++, inXYZ++) {
+                                double activation = inputActivation[inXYZ];
+                                frameProperties.weightCostGradient[kernZ + kernY + kx] += activation * error;
                             }
                         }
                     }

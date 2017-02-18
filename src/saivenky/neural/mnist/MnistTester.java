@@ -109,7 +109,9 @@ public class MnistTester {
         imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+        //ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+        ArrayCImplConvolutionLayer convolutionLayer = new ArrayCImplConvolutionLayer(
+        //ArrayImplConvolutionLayer convolutionLayer = new ArrayImplConvolutionLayer(
                 20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
 
