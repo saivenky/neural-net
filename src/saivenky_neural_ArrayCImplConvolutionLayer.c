@@ -1,4 +1,5 @@
 #include <jni.h>
+#include "neuron_props.h"
 #include "neuron.h"
 #include "saivenky_neural_ArrayCImplConvolutionLayer.h"
 
