@@ -1,21 +1,11 @@
 #ifndef NEURON_H
 #define NEURON_H
 
+#include "neuron_props.h"
+
 #define SHAPE_LEN 3
 #define SHAPE_SIZE sizeof(int) * 3
 #define LAST_DIM 2
-
-double randf();
-double randnormf();
-void init_rand(double *, int );
-
-struct properties {
-  int inputSize;
-  double *weights;
-  double bias;
-  double *weightErrors;
-  double biasError;
-};
 
 struct layer {
   int *inputShape;
@@ -31,10 +21,6 @@ struct layer {
   double *outputError;
   struct properties **props;
 };
-
-struct properties *create_properties(int );
-int destroy_properties(struct properties *);
-void update_properties(struct properties *, double );
 
 int *calcoutsize(int *, int *, int );
 int *calcdim(int *shape);

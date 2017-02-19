@@ -1,67 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
 #include <string.h>
 #include "neuron.h"
-#include "float.h"
-
-#define TWO_PI 6.28318530717958647692
-
-double randf() {
-  double result = (double)rand() / RAND_MAX;
-  return result;
-}
-
-double randnormf() {
-  static double z0, z1;
-  static bool generate;
-  generate = !generate;
-  if (!generate) return z1;
-
-  double u1, u2;
-  do {
-    u1 = randf();
-    u2 = randf();
-  } while (u1 <= DBL_MIN);
-
-  z0 = sqrt(-2.0 * log(u1)) * cos(TWO_PI * u2);
-  z1 = sqrt(-2.0 * log(u1)) * sin(TWO_PI * u2);
-  return z0;
-}
-
-void init_rand(double *array, int len) {
-  for(int i = 0; i < len; i++) {
-    array[i] = randnormf();
-  }
-}
-
-struct properties *create_properties(int inputSize) {
-  struct properties *p = malloc(sizeof(struct properties));
-  p->inputSize = inputSize;
-  p->weights = malloc(sizeof(double) * inputSize);
-  init_rand(p->weights, inputSize);
-  p->weightErrors = calloc(inputSize, sizeof(double));
-  p->bias = randnormf();
-  p->biasError = 0;
-  return p;
-}
-
-int destroy_properties(struct properties *p) {
-  free(p->weights);
-  free(p->weightErrors);
-  free(p);
-  return 0;
-}
-
-void update_properties(struct properties *p, double rate) {
-  for(int i = 0; i < p->inputSize; i++) {
-    p->weights[i] -= rate * p->weightErrors[i];
-    p->weightErrors[i] = 0;
-  }
-  p->bias -= rate * p->biasError;
-  p->biasError = 0;
-}
 
 int *calcoutsize(int *inputShape, int *kernelShape, int stride) {
   int *outputShape = malloc(SHAPE_SIZE);
@@ -138,13 +78,13 @@ int destroy_layer(struct layer *l) {
   return 0;
 }
 
-struct apply_kernel_args {
+struct frame_args {
   struct layer *l;
   int frame;
 };
 
 void *apply_kernel_single_frame (void *args) {
-  struct apply_kernel_args *fargs = (struct apply_kernel_args *)args;
+  struct frame_args *fargs = (struct frame_args *)args;
   struct layer layer = *(fargs->l);
   int frame = fargs->frame;
   int frameStart = frame * layer.outputDim[LAST_DIM];
@@ -174,7 +114,7 @@ void *apply_kernel_single_frame (void *args) {
   return NULL;
 }
 void apply_kernel(struct layer *l) {
-  struct apply_kernel_args args[l->frames];
+  struct frame_args args[l->frames];
   for (int frame = 0; frame < l->frames; frame++) {
     args[frame].l = l;
     args[frame].frame = frame;
@@ -182,14 +122,10 @@ void apply_kernel(struct layer *l) {
   }
 }
 
-struct backpropogate_to_props_args {
-  struct layer *l;
-  int frame;
-};
-
 void *backpropogate_to_props_single_frame(void *args) {
-  int frame = ((struct backpropogate_to_props_args *)args)->frame;
-  struct layer layer = *(((struct backpropogate_to_props_args *)args)->l);
+  struct frame_args *fargs = (struct frame_args *)args;
+  struct layer layer = *(fargs->l);
+  int frame = fargs->frame;
   int frameStart = frame * layer.outputDim[LAST_DIM];
   struct properties *prop = layer.props[frame];
 
@@ -216,7 +152,7 @@ void *backpropogate_to_props_single_frame(void *args) {
 }
 
 void backpropogate_to_props(struct layer *l) {
-  struct backpropogate_to_props_args args[l->frames];
+  struct frame_args args[l->frames];
   for (int frame = 0; frame < l->frames; frame++) {
     args[frame].l = l;
     args[frame].frame = frame;
@@ -235,7 +171,4 @@ int main() {
   int kernelShape[] = {2, 3, 6};
   struct layer *l = create_layer(inputShape, kernelShape, 20, 1);
   destroy_layer(l);
-  for(int i = 0; i < 20; i++) {
-    printf("%f %d\n", randf(), RAND_MAX);
-  }
 }
