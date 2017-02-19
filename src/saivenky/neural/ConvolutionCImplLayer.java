@@ -10,7 +10,7 @@ import java.nio.ByteOrder;
 /**
  * Created by saivenky on 2/16/17.
  */
-public class ArrayCImplConvolutionLayer implements ILayer {
+public class ConvolutionCImplLayer implements ILayer {
     private static final int SIZEOF_DOUBLE = 8;
 
     static {
@@ -29,15 +29,16 @@ public class ArrayCImplConvolutionLayer implements ILayer {
 
     private final long nativeLayerPtr;
 
-    public ArrayCImplConvolutionLayer(
-            int frames, int kernelWidth, int kernelHeight, ILayer previousLayer, ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
+    public ConvolutionCImplLayer(ILayer previousLayer, int[] kernelShapeWithoutDepth, int frames,
+                                 ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
+        System.out.printf("Creating %s\n", this.getClass().toString());
         input = previousLayer.getNeurons();
-        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input.getWidth(), kernelWidth, 1);
-        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input.getHeight(), kernelHeight, 1);
+        int[] kernelShape = { kernelShapeWithoutDepth[0], kernelShapeWithoutDepth[1], input.getDepth() };
+        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input.getWidth(), kernelShape[0], 1);
+        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input.getHeight(), kernelShape[1], 1);
         int outputDepth = FilterDimensionCalculator.calculateOutputSize(input.getDepth(), input.getDepth(), 1);
 
         int[] inputShape = { input.getWidth(), input.getHeight(), input.getDepth() };
-        int[] kernelShape = { kernelWidth, kernelHeight, input.getDepth() };
 
         neuronArray = new BasicNeuron[outputWidth * outputHeight * outputDepth * frames];
         neurons = new NeuronSet(neuronArray);
@@ -48,10 +49,6 @@ public class ArrayCImplConvolutionLayer implements ILayer {
         neurons.setShape(outputWidth, outputHeight, frames);
 
         nativeLayerPtr = createNativeLayer(inputShape, kernelShape, frames, 1);
-        System.out.printf("native pointer: 0x%x\n", nativeLayerPtr);
-        System.out.printf("JAVA: inputActivation(%d), inputError(%d), outputSignal(%d), outputError(%d)\n",
-                inputActivation.capacity(), inputError.capacity(), outputSignal.capacity(), outputError.capacity());
-
         ByteOrder nativeOrder = ByteOrder.nativeOrder();
         inputActivation.order(nativeOrder);
         inputError.order(nativeOrder);

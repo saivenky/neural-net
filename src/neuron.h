@@ -18,6 +18,7 @@ struct dim {
   int dim1;
   int dim2;
 };
+
 struct layer {
   struct shape inputShape;
   struct shape outputShape;

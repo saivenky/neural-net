@@ -1,7 +1,7 @@
 #include <jni.h>
 #include "neuron_props.h"
 #include "neuron.h"
-#include "saivenky_neural_ArrayCImplConvolutionLayer.h"
+#include "saivenky_neural_ConvolutionCImplLayer.h"
 
 struct JIntArray {
   jintArray jarray;
@@ -28,11 +28,11 @@ void ReleaseIntArray(JNIEnv *env, struct JIntArray *array, jint mode) {
 }
 
 /*
- * Class:     saivenky_neural_ArrayCImplConvolutionLayer
+ * Class:     saivenky_neural_ConvolutionCImplLayer
  * Method:    createNativeLayer
  * Signature: ([I[III)J
  */
-JNIEXPORT jlong JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_createNativeLayer
+JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_createNativeLayer
   (JNIEnv * env, jobject object, jintArray inputShape, jintArray kernelShape, jint frames, jint stride) {
 
   struct JIntArray jinputShape, jkernelShape;
@@ -52,33 +52,33 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_createNa
 }
 
 /*
- * Class:     saivenky_neural_ArrayCImplConvolutionLayer
+ * Class:     saivenky_neural_ConvolutionCImplLayer
  * Method:    applyConvolution
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_applyConvolution
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_applyConvolution
   (JNIEnv *env, jobject object, jlong nativeLayerPtr) {
     struct layer *layer = (struct layer *)nativeLayerPtr;
     apply_kernel(layer);
   }
 
 /*
- * Class:     saivenky_neural_ArrayCImplConvolutionLayer
+ * Class:     saivenky_neural_ConvolutionCImplLayer
  * Method:    backpropogateToProperties
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_backpropogateToProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogateToProperties
   (JNIEnv *env, jobject object, jlong nativeLayerPtr) {
     struct layer *layer = (struct layer *)nativeLayerPtr;
     backpropogate_to_props(layer);
   }
 
 /*
- * Class:     saivenky_neural_ArrayCImplConvolutionLayer
+ * Class:     saivenky_neural_ConvolutionCImplLayer
  * Method:    updateProperties
  * Signature: (JD)V
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_updateProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_updateProperties
   (JNIEnv *env, jobject object, jlong nativeLayerPtr, jdouble rate) {
     struct layer *layer = (struct layer *)nativeLayerPtr;
     for(int i = 0; i < layer->frames; i++) {

@@ -229,7 +229,7 @@ public class NeuralNetworkTest {
         NeuronSet input = new NeuronSet(new INeuron[2 * 2]);
         input.setShape(2, 2, 1);
         InputLayer inputLayer = new InputLayer(input);
-        ArrayImplConvolutionLayer convolutionLayer = new ArrayImplConvolutionLayer(
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
                 1, 1, 1, inputLayer, Linear.getInstance(), ZeroInitializer.getInstance());
         MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
         StandardLayer outputLayer = new StandardLayer(

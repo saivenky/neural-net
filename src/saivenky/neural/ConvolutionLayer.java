@@ -8,11 +8,13 @@ import saivenky.neural.neuron.NeuronInitializer;
  */
 public class ConvolutionLayer extends Layer {
 
+    final NeuronProperties[] properties;
+
     public ConvolutionLayer(
             int frames, int segmentWidth, int segmentHeight, ILayer previousLayer, ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
         super(null);
         Spatial3DStructure input3DStructure = previousLayer.getNeurons();
-        NeuronProperties[] properties = new NeuronProperties[frames];
+        properties = new NeuronProperties[frames];
         for(int f = 0; f < frames; f++) {
             properties[f] = new NeuronProperties(neuronInitializer, segmentWidth * segmentHeight * input3DStructure.getDepth());
         }

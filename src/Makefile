@@ -12,5 +12,5 @@ neuron_props.o: neuron_props.c rand.o
 	${CC} ${FLAGS} -c neuron_props.c
 neuron.o: neuron.c neuron_props.o
 	${CC} ${FLAGS} -c neuron.c -lpthread
-libneuron.so: saivenky_neural_ArrayCImplConvolutionLayer.c neuron.o
-	${CC} ${JNI} ${FLAGS} -o libneuron.so -shared -Wl,-soname,neuron.so saivenky_neural_ArrayCImplConvolutionLayer.c neuron.o neuron_props.o rand.o
+libneuron.so: saivenky_neural_ConvolutionCImplLayer.c neuron.o
+	${CC} ${JNI} ${FLAGS} -o libneuron.so -shared -Wl,-soname,neuron.so saivenky_neural_ConvolutionCImplLayer.c neuron.o neuron_props.o rand.o
