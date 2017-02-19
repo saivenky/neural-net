@@ -41,10 +41,10 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_ArrayCImplConvolutionLayer_createNa
   GetIntArray(env, &jinputShape);
   GetIntArray(env, &jkernelShape);
   struct layer *layer = create_layer(jinputShape.array, jkernelShape.array, frames, stride);
-  SetByteBuffer(env, object, "inputActivation", layer->inputActivation, layer->inputDim[LAST_DIM] * sizeof(double));
-  SetByteBuffer(env, object, "inputError", layer->inputError, layer->inputDim[LAST_DIM] * sizeof(double));
-  SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->frames * layer->outputDim[LAST_DIM] * sizeof(double));
-  SetByteBuffer(env, object, "outputError", layer->outputError, layer->frames * layer->outputDim[LAST_DIM] * sizeof(double));
+  SetByteBuffer(env, object, "inputActivation", layer->inputActivation, layer->inputDim.dim2 * sizeof(double));
+  SetByteBuffer(env, object, "inputError", layer->inputError, layer->inputDim.dim2 * sizeof(double));
+  SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->frames * layer->outputDim.dim2 * sizeof(double));
+  SetByteBuffer(env, object, "outputError", layer->outputError, layer->frames * layer->outputDim.dim2 * sizeof(double));
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jkernelShape, JNI_ABORT);
   jlong returnValue = (jlong) layer;

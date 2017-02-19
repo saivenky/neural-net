@@ -6,12 +6,12 @@
 
 #define TWO_PI 6.28318530717958647692
 
-double randf() {
+inline double randf() {
   double result = (double)rand() / RAND_MAX;
   return result;
 }
 
-double randnormf() {
+inline double randnormf() {
   static double z0, z1;
   static bool generate;
   generate = !generate;
@@ -28,7 +28,7 @@ double randnormf() {
   return z0;
 }
 
-void init_rand(double *array, int len) {
+inline void init_rand(double *array, int len) {
   for(int i = 0; i < len; i++) {
     array[i] = randnormf();
   }
