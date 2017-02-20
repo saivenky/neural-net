@@ -9,7 +9,9 @@ rand.o: rand.c
 	${CC} ${FLAGS} -c rand.c -lm
 neuron_props.o: neuron_props.c rand.o
 	${CC} ${FLAGS} -c neuron_props.c
+sigmoid_layer.o: sigmoid_layer.c
+	${CC} ${FLAGS} -c sigmoid_layer.c -lm
 convolution_layer.o: convolution_layer.c neuron_props.o
-	${CC} ${FLAGS} -c convolution_layer.c -lpthread
-libneural.so: saivenky_neural_ConvolutionCImplLayer.c convolution_layer.o
-	${CC} ${JNI} ${FLAGS} -o libneural.so -shared -Wl,-soname,neural.so saivenky_neural_ConvolutionCImplLayer.c convolution_layer.o neuron_props.o rand.o
+	${CC} ${FLAGS} -c convolution_layer.c
+libneural.so: saivenky_neural_ConvolutionCImplLayer.c convolution_layer.o sigmoid_layer.o
+	${CC} ${JNI} ${FLAGS} -o libneural.so -shared -Wl,-soname,neural.so saivenky_neural_ConvolutionCImplLayer.c convolution_layer.o neuron_props.o rand.o sigmoid_layer.o

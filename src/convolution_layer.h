@@ -1,5 +1,5 @@
-#ifndef NEURON_H
-#define NEURON_H
+#ifndef CONVOLUTION_LAYER_H
+#define CONVOLUTION_LAYER_H
 
 #include "neuron_props.h"
 
@@ -19,7 +19,7 @@ struct dim {
   int dim2;
 };
 
-struct layer {
+struct convolution_layer {
   struct shape inputShape;
   struct shape outputShape;
   struct shape kernelShape;
@@ -37,11 +37,11 @@ struct layer {
 struct shape calcoutsize(struct shape inputShape, struct shape kernelShape, int stride);
 struct dim calcdim(struct shape);
 
-struct layer *create_layer(int *inputShape, int *kernelShape, int frames, int stride);
-int destroy_layer(struct layer *l);
-void feedforward(struct layer *l);
-void backpropogate(struct layer *l);
-void backpropogate_to_input(struct layer *l);
-void backpropogate_to_props(struct layer *l);
-void update(struct layer *l, double rate);
+struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, double *inputActivation, double *inputError);
+int destroy_convolution_layer(struct convolution_layer *l);
+void feedforward_convolution_layer(struct convolution_layer *l);
+void backpropogate_convolution_layer(struct convolution_layer *l);
+void backpropogate_to_input_convolution_layer(struct convolution_layer *l);
+void backpropogate_to_props_convolution_layer(struct convolution_layer *l);
+void update_convolution_layer(struct convolution_layer *l, double rate);
 #endif

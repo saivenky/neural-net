@@ -110,10 +110,10 @@ public class MnistTester {
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         int[] kernelShape = {7, 7};
-        //ConvolutionLayer convolutionLayer = new ConvolutionLayer(
         ConvolutionCImplLayer convolutionLayer = new ConvolutionCImplLayer(
-        //ArrayImplConvolutionLayer convolutionLayer = new ArrayImplConvolutionLayer(
-                inputLayer, kernelShape, 20, Sigmoid.getInstance(), GaussianInitializer.getInstance());
+                inputLayer, kernelShape, 20);
+        //ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+        //        20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
 
         MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);

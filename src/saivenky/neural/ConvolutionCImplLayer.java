@@ -1,11 +1,5 @@
 package saivenky.neural;
 
-import saivenky.neural.BasicNeuron;
-import saivenky.neural.FilterDimensionCalculator;
-import saivenky.neural.ILayer;
-import saivenky.neural.NeuronSet;
-import saivenky.neural.activation.ActivationFunction;
-import saivenky.neural.neuron.NeuronInitializer;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.nio.ByteBuffer;
@@ -33,8 +27,7 @@ public class ConvolutionCImplLayer implements ILayer {
 
     private final long nativeLayerPtr;
 
-    public ConvolutionCImplLayer(ILayer previousLayer, int[] kernelShapeWithoutDepth, int frames,
-                                 ActivationFunction activationFunction, NeuronInitializer neuronInitializer) {
+    public ConvolutionCImplLayer(ILayer previousLayer, int[] kernelShapeWithoutDepth, int frames) {
         System.out.printf("Creating %s\n", this.getClass().toString());
         input = previousLayer.getNeurons();
         int[] kernelShape = { kernelShapeWithoutDepth[0], kernelShapeWithoutDepth[1], input.getDepth() };
@@ -47,23 +40,29 @@ public class ConvolutionCImplLayer implements ILayer {
         neuronArray = new BasicNeuron[outputWidth * outputHeight * outputDepth * frames];
         neurons = new NeuronSet(neuronArray);
         for(int i = 0; i < neuronArray.length; i++) {
-            neuronArray[i] = new BasicNeuron(activationFunction);
+            neuronArray[i] = new BasicNeuron();
         }
 
         neurons.setShape(outputWidth, outputHeight, frames);
 
-        nativeLayerPtr = createNativeLayer(inputShape, kernelShape, frames, 1);
+        inputActivation = ByteBuffer.allocateDirect(SIZEOF_DOUBLE * input.size());
+        inputError = null;
+        nativeLayerPtr = create(inputShape, kernelShape, frames, 1, inputActivation, inputError);
+
         ByteOrder nativeOrder = ByteOrder.nativeOrder();
         inputActivation.order(nativeOrder);
-        inputError.order(nativeOrder);
+        //inputError.order(nativeOrder);
         outputSignal.order(nativeOrder);
         outputError.order(nativeOrder);
     }
 
-    private native long createNativeLayer(int[] inputShape, int[] kernelShape, int frames, int stride);
-    private native void applyConvolution(long nativeLayerPtr);
-    private native void backpropogateToProperties(long nativeLayerPtr);
-    private native void updateProperties(long nativeLayerPtr, double rate);
+    private native long create(
+            int[] inputShape, int[] kernelShape, int frames, int stride,
+            ByteBuffer inputActivation, ByteBuffer inputError);
+    private native long destroy(long nativeLayerPtr);
+    private native void feedforward(long nativeLayerPtr);
+    private native void backpropogate(long nativeLayerPtr);
+    private native void update(long nativeLayerPtr, double rate);
 
     private void copyInputActivation() {
         for(int i = 0, bbIndex = 0; i < input.size(); i++, bbIndex += SIZEOF_DOUBLE) {
@@ -80,13 +79,6 @@ public class ConvolutionCImplLayer implements ILayer {
     private void copyOutputSignal() {
         for(int i = 0, bbIndex = 0; i < neuronArray.length; i++, bbIndex += SIZEOF_DOUBLE) {
             neuronArray[i].setSignal(outputSignal.getDouble(bbIndex));
-
-        }
-    }
-
-    private void applyActivationFunction() {
-        for (BasicNeuron basicNeuron : neuronArray) {
-            basicNeuron.activate();
         }
     }
 
@@ -103,30 +95,20 @@ public class ConvolutionCImplLayer implements ILayer {
     @Override
     public void feedforward() {
         copyInputActivation();
-        applyConvolution(nativeLayerPtr);
+        feedforward(nativeLayerPtr);
         copyOutputSignal();
-        applyActivationFunction();
     }
 
     @Override
     public void backpropagate(boolean backpropagateToPreviousLayer) {
-        for(BasicNeuron basicNeuron : neuronArray) {
-            basicNeuron.backpropagate(false);
-        }
-
         copyOutputError();
-        backpropogateToProperties(nativeLayerPtr);
-
-        if(backpropagateToPreviousLayer) {
-            throw new NotImplementedException();
-        }
-
+        backpropogate(nativeLayerPtr);
         zeroError();
     }
 
     @Override
     public void gradientDescent(double rate) {
-        updateProperties(nativeLayerPtr, rate);
+        update(nativeLayerPtr, rate);
     }
 
     private void zeroError() {

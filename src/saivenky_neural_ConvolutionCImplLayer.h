@@ -11,34 +11,42 @@ extern "C" {
 #define saivenky_neural_ConvolutionCImplLayer_SIZEOF_DOUBLE 8L
 /*
  * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    createNativeLayer
- * Signature: ([I[III)J
+ * Method:    create
+ * Signature: ([I[IIILjava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)J
  */
-JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_createNativeLayer
-  (JNIEnv *, jobject, jintArray, jintArray, jint, jint);
+JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_create
+  (JNIEnv *, jobject, jintArray, jintArray, jint, jint, jobject, jobject);
 
 /*
  * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    applyConvolution
- * Signature: (J)V
+ * Method:    destroy
+ * Signature: (J)J
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_applyConvolution
+JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_destroy
   (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    backpropogateToProperties
+ * Method:    feedforward
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogateToProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_feedforward
   (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    updateProperties
+ * Method:    backpropogate
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogate
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     saivenky_neural_ConvolutionCImplLayer
+ * Method:    update
  * Signature: (JD)V
  */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_updateProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_update
   (JNIEnv *, jobject, jlong, jdouble);
 
 #ifdef __cplusplus

@@ -36,8 +36,8 @@ inline struct shape create_shape(int *shapeArray) {
   return shape;
 }
 
-struct layer *create_layer(int *inputShape, int *kernelShape, int frames, int stride) {
-  struct layer *l = malloc(sizeof(struct layer));
+struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, double *inputActivation, double *inputError) {
+  struct convolution_layer *l = malloc(sizeof(struct convolution_layer));
   l->inputShape = create_shape(inputShape);
   l->kernelShape = create_shape(kernelShape);
   l->outputShape = calcoutsize(l->inputShape, l->kernelShape, stride);
@@ -46,25 +46,32 @@ struct layer *create_layer(int *inputShape, int *kernelShape, int frames, int st
   l->kernelDim = calcdim(l->kernelShape);
   l->frames = frames;
 
-  long inputSize = l->inputDim.dim2 * sizeof(double);
-  l->inputActivation = malloc(inputSize);
-  l->inputError = malloc(inputSize);
+  if (inputActivation == NULL) {
+    printf("ERROR: inputActivation is NULL\n");
+    fflush(stdout);
+  }
 
-  long outputSize = frames * l->outputDim.dim2 * sizeof(double);
-  l->outputSignal = malloc(outputSize);
-  l->outputError = malloc(outputSize);
+  l->inputActivation = inputActivation;
+
+  if (inputError == NULL) {
+    printf("NATIVE: inputError is NULL\n");
+    fflush(stdout);
+  }
+
+  l->inputError = inputError;
+
+  l->outputSignal = malloc(frames * l->outputDim.dim2 * sizeof(double));
+  l->outputError = calloc(frames * l->outputDim.dim2, sizeof(double));
 
   l->props = malloc(sizeof(struct properties *) * frames);
   for(int i = 0; i < frames; i++) {
     l->props[i] = create_properties(l->kernelDim.dim2);
   }
 
-  printf("NATIVE: input(%ld), output(%ld), kernel(%ld)\n", inputSize, outputSize, l->kernelDim.dim2 * sizeof(double));
-  fflush(stdout);
   return l;
 }
 
-int destroy_layer(struct layer *l) {
+int destroy_convolution_layer(struct convolution_layer *l) {
   free(l->inputActivation);
   free(l->inputError);
   free(l->outputSignal);
@@ -80,13 +87,13 @@ int destroy_layer(struct layer *l) {
 }
 
 struct frame_args {
-  struct layer *l;
+  struct convolution_layer *l;
   int frame;
 };
 
 void *apply_kernel_single_frame (void *args) {
   struct frame_args *fargs = (struct frame_args *)args;
-  struct layer *layer = fargs->l;
+  struct convolution_layer *layer = fargs->l;
   int frame = fargs->frame;
   int frameStart = frame * layer->outputDim.dim2;
   double *weights = layer->props[frame]->weights;
@@ -115,7 +122,7 @@ void *apply_kernel_single_frame (void *args) {
   return NULL;
 }
 
-void feedforward(struct layer *l) {
+void feedforward_convolution_layer(struct convolution_layer *l) {
   struct frame_args args[l->frames];
   for (int frame = 0; frame < l->frames; frame++) {
     args[frame].l = l;
@@ -124,7 +131,7 @@ void feedforward(struct layer *l) {
   }
 }
 
-void backpropogate_to_input(struct layer *l) {
+void backpropogate_to_input_convolution_layer(struct convolution_layer *l) {
   for (int frame = 0; frame < l->frames; frame++) {
     int frameStart = frame * l->outputDim.dim2;
     double *weights = l->props[frame]->weights;
@@ -150,7 +157,7 @@ void backpropogate_to_input(struct layer *l) {
 
 void *backpropogate_to_props_single_frame(void *args) {
   struct frame_args *fargs = (struct frame_args *)args;
-  struct layer *layer = fargs->l;
+  struct convolution_layer *layer = fargs->l;
   int frame = fargs->frame;
   int frameStart = frame * layer->outputDim.dim2;
   struct properties *prop = layer->props[frame];
@@ -178,7 +185,7 @@ void *backpropogate_to_props_single_frame(void *args) {
   return NULL;
 }
 
-void backpropogate_to_props(struct layer *l) {
+void backpropogate_to_props_convolution_layer(struct convolution_layer *l) {
   struct frame_args args[l->frames];
   for (int frame = 0; frame < l->frames; frame++) {
     args[frame].l = l;
@@ -187,27 +194,16 @@ void backpropogate_to_props(struct layer *l) {
   }
 }
 
-void backpropogate(struct layer *l) {
-  backpropogate_to_props(l);
-  if (l->inputError == NULL) return;
-  backpropogate_to_input(l);
+void backpropogate_convolution_layer(struct convolution_layer *l) {
+  backpropogate_to_props_convolution_layer(l);
+  if (l->inputError != NULL) {
+    backpropogate_to_input_convolution_layer(l);
+  }
+  memset(l->outputError, 0, l->outputDim.dim2 * l->frames * sizeof(double));
 }
 
-void update(struct layer *l, double rate) {
+void update_convolution_layer(struct convolution_layer *l, double rate) {
   for(int i = 0; i < l->frames; i++) {
     update_properties(l->props[i], rate);
   }
-}
-
-void bye() {
-  printf("Goodbye\n");
-}
-
-int main() {
-  atexit(bye);
-  printf("Hello World\n");
-  int inputShape[] = {4, 5, 6};
-  int kernelShape[] = {2, 3, 6};
-  struct layer *l = create_layer(inputShape, kernelShape, 20, 1);
-  destroy_layer(l);
 }

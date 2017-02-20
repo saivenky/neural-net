@@ -1,6 +1,9 @@
 #include <jni.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "neuron_props.h"
 #include "convolution_layer.h"
+#include "sigmoid_layer.h"
 #include "saivenky_neural_ConvolutionCImplLayer.h"
 
 struct JIntArray {
@@ -9,7 +12,7 @@ struct JIntArray {
   jboolean isCopy;
 };
 
-void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, void *address, int len) {
+void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, void *address, long len) {
   jclass clazz = (*env)->GetObjectClass(env, obj);
   jfieldID fieldId = (*env)->GetFieldID(env, clazz, fieldName, "Ljava/nio/ByteBuffer;");
   jobject byteBuffer = (*env)->NewDirectByteBuffer(env, address, len);
@@ -27,59 +30,52 @@ void ReleaseIntArray(JNIEnv *env, struct JIntArray *array, jint mode) {
   }
 }
 
-/*
- * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    createNativeLayer
- * Signature: ([I[III)J
- */
-JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_createNativeLayer
-  (JNIEnv * env, jobject object, jintArray inputShape, jintArray kernelShape, jint frames, jint stride) {
+struct bundle_layer {
+  struct convolution_layer *conv;
+  struct sigmoid_layer *sigm;
+};
+
+JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_create
+  (JNIEnv * env, jobject object, jintArray inputShape, jintArray kernelShape, jint frames, jint stride,
+   jobject jinputActivation, jobject jinputError) {
 
   struct JIntArray jinputShape, jkernelShape;
   jinputShape.jarray = inputShape;
   jkernelShape.jarray = kernelShape;
   GetIntArray(env, &jinputShape);
   GetIntArray(env, &jkernelShape);
-  struct layer *layer = create_layer(jinputShape.array, jkernelShape.array, frames, stride);
-  SetByteBuffer(env, object, "inputActivation", layer->inputActivation, layer->inputDim.dim2 * sizeof(double));
-  SetByteBuffer(env, object, "inputError", layer->inputError, layer->inputDim.dim2 * sizeof(double));
-  SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->frames * layer->outputDim.dim2 * sizeof(double));
-  SetByteBuffer(env, object, "outputError", layer->outputError, layer->frames * layer->outputDim.dim2 * sizeof(double));
+  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
+  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+  struct convolution_layer *layer1 = create_convolution_layer(jinputShape.array, jkernelShape.array, frames, stride, inputActivation, inputError);
+  struct sigmoid_layer *layer2 = create_sigmoid_layer(layer1->frames * layer1->outputDim.dim2, layer1->outputSignal, layer1->outputError);
+  SetByteBuffer(env, object, "outputSignal", layer2->outputSignal, layer2->size * sizeof(double));
+  SetByteBuffer(env, object, "outputError", layer2->outputError, layer2->size * sizeof(double));
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jkernelShape, JNI_ABORT);
+  struct bundle_layer *layer = malloc(sizeof(struct bundle_layer));
+  layer->conv = layer1;
+  layer->sigm = layer2;
   jlong returnValue = (jlong) layer;
   return returnValue;
 }
 
-/*
- * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    applyConvolution
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_applyConvolution
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_feedforward
   (JNIEnv *env, jobject object, jlong nativeLayerPtr) {
-    struct layer *layer = (struct layer *)nativeLayerPtr;
-    feedforward(layer);
+    struct bundle_layer *layer = (struct bundle_layer *)nativeLayerPtr;
+    feedforward_convolution_layer(layer->conv);
+    feedforward_sigmoid_layer(layer->sigm);
   }
 
-/*
- * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    backpropogateToProperties
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogateToProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogate
   (JNIEnv *env, jobject object, jlong nativeLayerPtr) {
-    struct layer *layer = (struct layer *)nativeLayerPtr;
-    backpropogate_to_props(layer);
+    struct bundle_layer *layer = (struct bundle_layer *)nativeLayerPtr;
+    backpropogate_sigmoid_layer(layer->sigm);
+    backpropogate_convolution_layer(layer->conv);
   }
 
-/*
- * Class:     saivenky_neural_ConvolutionCImplLayer
- * Method:    updateProperties
- * Signature: (JD)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_updateProperties
+JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_update
   (JNIEnv *env, jobject object, jlong nativeLayerPtr, jdouble rate) {
-    struct layer *layer = (struct layer *)nativeLayerPtr;
-    update(layer, rate);
+    struct bundle_layer *layer = (struct bundle_layer *)nativeLayerPtr;
+    update_sigmoid_layer(layer->sigm);
+    update_convolution_layer(layer->conv, rate);
   }
