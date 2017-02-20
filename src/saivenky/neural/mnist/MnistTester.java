@@ -3,6 +3,8 @@ package saivenky.neural.mnist;
 import saivenky.neural.*;
 import saivenky.neural.activation.Linear;
 import saivenky.neural.activation.Sigmoid;
+import saivenky.neural.c.ConvolutionLayer;
+import saivenky.neural.c.SigmoidLayer;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.ImageWriter;
 import saivenky.neural.neuron.GaussianInitializer;
@@ -110,13 +112,14 @@ public class MnistTester {
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
         int[] kernelShape = {7, 7};
-        ConvolutionCImplLayer convolutionLayer = new ConvolutionCImplLayer(
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
                 inputLayer, kernelShape, 20);
+        SigmoidLayer sigmoidLayer = new SigmoidLayer(convolutionLayer, convolutionLayer.getNeurons().size());
         //ConvolutionLayer convolutionLayer = new ConvolutionLayer(
         //        20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
 
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, sigmoidLayer);
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
@@ -124,7 +127,8 @@ public class MnistTester {
         StandardLayer outputLayer = new StandardLayer(
                 10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
 
-        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), convolutionLayer, poolingLayer, standardLayer, outputLayer);
+        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(),
+                convolutionLayer, sigmoidLayer, poolingLayer, standardLayer, outputLayer);
         System.out.println(".");
 
         trainer.setNeuralNetwork(nn);
@@ -139,7 +143,7 @@ public class MnistTester {
         imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
+        saivenky.neural.ConvolutionLayer convolutionLayer = new saivenky.neural.ConvolutionLayer(
                 10, 14, 14, inputLayer, Linear.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
         System.out.print(".");

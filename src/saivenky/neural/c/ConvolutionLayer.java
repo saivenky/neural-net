@@ -1,5 +1,9 @@
-package saivenky.neural;
+package saivenky.neural.c;
 
+import saivenky.neural.BasicNeuron;
+import saivenky.neural.FilterDimensionCalculator;
+import saivenky.neural.ILayer;
+import saivenky.neural.NeuronSet;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.nio.ByteBuffer;
@@ -8,26 +12,22 @@ import java.nio.ByteOrder;
 /**
  * Created by saivenky on 2/16/17.
  */
-public class ConvolutionCImplLayer implements ILayer {
-    private static final int SIZEOF_DOUBLE = 8;
+public class ConvolutionLayer extends Layer {
 
     static {
         System.loadLibrary("neural");
         System.out.println("Loaded 'neural' library");
     }
 
-    private ByteBuffer inputActivation;
-    private ByteBuffer inputError;
-    private ByteBuffer outputSignal;
-    private ByteBuffer outputError;
-
     private final NeuronSet input;
     private final BasicNeuron[] neuronArray;
     private final NeuronSet neurons;
 
-    private final long nativeLayerPtr;
+    public ConvolutionLayer(Layer previousLayer, int[] kernelShapeWithoutDepth, int frames) {
+        this((ILayer)previousLayer, kernelShapeWithoutDepth, frames);
+    }
 
-    public ConvolutionCImplLayer(ILayer previousLayer, int[] kernelShapeWithoutDepth, int frames) {
+    public ConvolutionLayer(ILayer previousLayer, int[] kernelShapeWithoutDepth, int frames) {
         System.out.printf("Creating %s\n", this.getClass().toString());
         input = previousLayer.getNeurons();
         int[] kernelShape = { kernelShapeWithoutDepth[0], kernelShapeWithoutDepth[1], input.getDepth() };
@@ -70,18 +70,6 @@ public class ConvolutionCImplLayer implements ILayer {
         }
     }
 
-    private void copyOutputError() {
-        for(int i = 0, bbIndex = 0; i < neuronArray.length; i++, bbIndex += SIZEOF_DOUBLE) {
-            outputError.putDouble(bbIndex, neuronArray[i].getError());
-        }
-    }
-
-    private void copyOutputSignal() {
-        for(int i = 0, bbIndex = 0; i < neuronArray.length; i++, bbIndex += SIZEOF_DOUBLE) {
-            neuronArray[i].setSignal(outputSignal.getDouble(bbIndex));
-        }
-    }
-
     @Override
     public NeuronSet getNeurons() {
         return neurons;
@@ -96,25 +84,16 @@ public class ConvolutionCImplLayer implements ILayer {
     public void feedforward() {
         copyInputActivation();
         feedforward(nativeLayerPtr);
-        copyOutputSignal();
     }
 
     @Override
     public void backpropagate(boolean backpropagateToPreviousLayer) {
-        copyOutputError();
         backpropogate(nativeLayerPtr);
-        zeroError();
     }
 
     @Override
     public void gradientDescent(double rate) {
         update(nativeLayerPtr, rate);
-    }
-
-    private void zeroError() {
-        for(BasicNeuron basicNeuron : neuronArray) {
-            basicNeuron.setSignalCostGradient(0);
-        }
     }
 
     @Override
