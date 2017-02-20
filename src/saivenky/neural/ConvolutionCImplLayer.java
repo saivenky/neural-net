@@ -1,5 +1,9 @@
 package saivenky.neural;
 
+import saivenky.neural.BasicNeuron;
+import saivenky.neural.FilterDimensionCalculator;
+import saivenky.neural.ILayer;
+import saivenky.neural.NeuronSet;
 import saivenky.neural.activation.ActivationFunction;
 import saivenky.neural.neuron.NeuronInitializer;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -14,8 +18,8 @@ public class ConvolutionCImplLayer implements ILayer {
     private static final int SIZEOF_DOUBLE = 8;
 
     static {
-        System.loadLibrary("neuron");
-        System.out.println("Loaded 'neuron' library");
+        System.loadLibrary("neural");
+        System.out.println("Loaded 'neural' library");
     }
 
     private ByteBuffer inputActivation;

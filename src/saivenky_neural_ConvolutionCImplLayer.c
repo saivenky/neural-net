@@ -1,6 +1,6 @@
 #include <jni.h>
 #include "neuron_props.h"
-#include "neuron.h"
+#include "convolution_layer.h"
 #include "saivenky_neural_ConvolutionCImplLayer.h"
 
 struct JIntArray {
@@ -59,7 +59,7 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_ConvolutionCImplLayer_createNativeL
 JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_applyConvolution
   (JNIEnv *env, jobject object, jlong nativeLayerPtr) {
     struct layer *layer = (struct layer *)nativeLayerPtr;
-    apply_kernel(layer);
+    feedforward(layer);
   }
 
 /*
@@ -81,7 +81,5 @@ JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_backpropogateT
 JNIEXPORT void JNICALL Java_saivenky_neural_ConvolutionCImplLayer_updateProperties
   (JNIEnv *env, jobject object, jlong nativeLayerPtr, jdouble rate) {
     struct layer *layer = (struct layer *)nativeLayerPtr;
-    for(int i = 0; i < layer->frames; i++) {
-      update_properties(layer->props[i], rate);
-    }
+    update(layer, rate);
   }

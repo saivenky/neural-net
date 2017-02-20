@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "neuron_props.h"
-#include "neuron.h"
+#include "convolution_layer.h"
 
 inline int calcoutsize_single(int inputSize, int kernelSize, int stride) {
   int temp = inputSize - kernelSize;
@@ -114,12 +114,37 @@ void *apply_kernel_single_frame (void *args) {
   }
   return NULL;
 }
-void apply_kernel(struct layer *l) {
+
+void feedforward(struct layer *l) {
   struct frame_args args[l->frames];
   for (int frame = 0; frame < l->frames; frame++) {
     args[frame].l = l;
     args[frame].frame = frame;
     apply_kernel_single_frame(&args[frame]);
+  }
+}
+
+void backpropogate_to_input(struct layer *l) {
+  for (int frame = 0; frame < l->frames; frame++) {
+    int frameStart = frame * l->outputDim.dim2;
+    double *weights = l->props[frame]->weights;
+
+    for (int outZ = 0, inZInit = 0; outZ < l->outputDim.dim2; outZ += l->outputDim.dim1, inZInit += l->inputDim.dim1) {
+      for (int outY = 0, inYInit = 0; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
+        for (int outX = 0; outX < l->outputDim.dim0; outX++) {
+          double error = l->outputError[frameStart + outX + outY + outZ];
+
+          for (int kernZ = 0, inZ = inZInit; kernZ < l->kernelDim.dim2; inZ += l->inputDim.dim1, kernZ += l->kernelDim.dim1) {
+            for (int kernY = 0, inYZ = inZ + inYInit; kernY < l->kernelDim.dim1; inYZ += l->inputDim.dim0, kernY += l->kernelDim.dim0) {
+              for (int kernX = 0, inXYZ = inYZ + outX; kernX < l->kernelDim.dim0; kernX++, inXYZ++) {
+                double weight = weights[kernZ + kernY + kernX];
+                l->inputError[inXYZ] += weight * error;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -159,6 +184,18 @@ void backpropogate_to_props(struct layer *l) {
     args[frame].l = l;
     args[frame].frame = frame;
     backpropogate_to_props_single_frame(&args[frame]);
+  }
+}
+
+void backpropogate(struct layer *l) {
+  backpropogate_to_props(l);
+  if (l->inputError == NULL) return;
+  backpropogate_to_input(l);
+}
+
+void update(struct layer *l, double rate) {
+  for(int i = 0; i < l->frames; i++) {
+    update_properties(l->props[i], rate);
   }
 }
 

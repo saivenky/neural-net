@@ -37,9 +37,11 @@ struct layer {
 struct shape calcoutsize(struct shape inputShape, struct shape kernelShape, int stride);
 struct dim calcdim(struct shape);
 
-struct layer;
 struct layer *create_layer(int *inputShape, int *kernelShape, int frames, int stride);
 int destroy_layer(struct layer *l);
-void apply_kernel(struct layer *l);
+void feedforward(struct layer *l);
+void backpropogate(struct layer *l);
+void backpropogate_to_input(struct layer *l);
 void backpropogate_to_props(struct layer *l);
+void update(struct layer *l, double rate);
 #endif
