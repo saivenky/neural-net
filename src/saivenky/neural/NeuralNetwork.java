@@ -17,10 +17,10 @@ public class NeuralNetwork {
 
     private int trainedExamples;
 
-    public double[] predicted;
+    private IInputLayer inputLayer;
+    private IOutputLayer outputLayer;
     private CostFunction costFunction;
-    private ILayer outputLayer;
-    private InputLayer inputLayer;
+    public double[] predicted;
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
@@ -37,23 +37,23 @@ public class NeuralNetwork {
             previousLayer = layers[i-1];
         }
 
-        outputLayer = layers[layers.length - 1];
+        if (!(layers[layers.length - 1] instanceof IOutputLayer)) {
+            throw new RuntimeException("no output layer");
+        }
+        outputLayer = (IOutputLayer) layers[layers.length - 1];
         predicted = new double[outputLayer.getNeurons().size()];
     }
 
-    private void updatePredicted() {
-        for(int i = 0; i < outputLayer.getNeurons().size(); i++) {
-            predicted[i] = outputLayer.getNeurons().get(i).getActivation();
-        }
-    }
-
-    public NeuralNetwork(InputLayer inputLayer, CostFunction costFunction, ILayer ... layers) {
+    public NeuralNetwork(IInputLayer inputLayer, CostFunction costFunction, ILayer ... layers) {
         this.inputLayer = inputLayer;
         this.costFunction = costFunction;
         this.layers = layers;
-        outputLayer = layers[layers.length - 1];
+        if (!(layers[layers.length - 1] instanceof IOutputLayer)) {
+            throw new RuntimeException("no output layer");
+        }
+        outputLayer = (IOutputLayer)layers[layers.length - 1];
         trainedExamples = 0;
-        if (outputLayer != null) predicted = new double[outputLayer.getNeurons().size()];
+        if (outputLayer != null) predicted = new double[outputLayer.size()];
     }
 
     public void run(double[] input) {
@@ -62,7 +62,7 @@ public class NeuralNetwork {
             layers[i].run();
         }
 
-        updatePredicted();
+        outputLayer.getPredicted(predicted);
     }
 
     private void feedforward(double[] input) {
@@ -71,7 +71,7 @@ public class NeuralNetwork {
             layers[i].feedforward();
         }
 
-        updatePredicted();
+        outputLayer.getPredicted(predicted);
     }
 
     private void backpropagate(double[] output) {

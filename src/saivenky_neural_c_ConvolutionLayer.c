@@ -16,8 +16,8 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
   double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
   double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
   struct convolution_layer *layer = create_convolution_layer(jinputShape.array, jkernelShape.array, frames, stride, inputActivation, inputError);
-  SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->frames * layer->outputDim.dim2 * sizeof(double));
-  SetByteBuffer(env, object, "outputError", layer->outputError, layer->frames * layer->outputDim.dim2 * sizeof(double));
+  SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->outputDim.dim2 * sizeof(double));
+  SetByteBuffer(env, object, "outputError", layer->outputError, layer->outputDim.dim2 * sizeof(double));
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jkernelShape, JNI_ABORT);
   jlong returnValue = (jlong) layer;

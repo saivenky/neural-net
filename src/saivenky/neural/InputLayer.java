@@ -3,7 +3,7 @@ package saivenky.neural;
 /**
  * Created by saivenky on 2/1/17.
  */
-public class InputLayer implements ILayer {
+public class InputLayer implements IInputLayer {
     NeuronSet neurons;
 
     public InputLayer(int size) {

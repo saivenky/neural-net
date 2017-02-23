@@ -3,7 +3,9 @@ package saivenky.neural.mnist;
 import saivenky.neural.*;
 import saivenky.neural.activation.Linear;
 import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.c.ConvolutionLayer;
+import saivenky.neural.ConvolutionLayer;
+import saivenky.neural.c.FullyConnectedLayer;
+import saivenky.neural.c.OutputLayer;
 import saivenky.neural.c.SigmoidLayer;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.ImageWriter;
@@ -54,7 +56,7 @@ public class MnistTester {
                 nn = getStandardNeuralNetwork(trainer);
                 break;
             case "cnn":
-                nn = getConvolutionNeuralNetwork(trainer);
+                nn = getCConvolutionNeuralNetwork(trainer);
                 System.out.println("cnn)");
                 break;
             case "small-cnn":
@@ -106,20 +108,51 @@ public class MnistTester {
         return nn;
     }
 
+    private static NeuralNetwork getCConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
+        saivenky.neural.c.InputLayer inputLayer = new saivenky.neural.c.InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT);
+        inputLayer.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
+        int[] kernelShape = {7, 7, 1};
+        int[] poolShape = {2, 2, 1};
+
+        saivenky.neural.c.ConvolutionLayer convolutionLayer = new saivenky.neural.c.ConvolutionLayer(
+                inputLayer, kernelShape, 20);
+        saivenky.neural.c.MaxPoolingLayer poolingLayer = new saivenky.neural.c.MaxPoolingLayer(convolutionLayer, poolShape, 2);
+        saivenky.neural.c.SigmoidLayer sigmoidLayer = new saivenky.neural.c.SigmoidLayer(poolingLayer);
+
+        FullyConnectedLayer fcLayer = new FullyConnectedLayer(sigmoidLayer, 100);
+        SigmoidLayer sigmoidLayer2 = new SigmoidLayer(fcLayer);
+        FullyConnectedLayer fcLayer2 = new FullyConnectedLayer(sigmoidLayer2, 10);
+        SigmoidLayer sigmoidLayer3 = new SigmoidLayer(fcLayer2);
+        OutputLayer outputLayer = new OutputLayer(sigmoidLayer3);
+        NeuralNetwork nn = new NeuralNetwork(
+                inputLayer, CrossEntropy.getInstance(),
+                convolutionLayer,
+                poolingLayer,
+                sigmoidLayer,
+                fcLayer,
+                sigmoidLayer2,
+                fcLayer2,
+                sigmoidLayer3,
+                outputLayer);
+        System.out.println("...");
+
+        trainer.setNeuralNetwork(nn);
+        trainer.setLearningRate(0.1);
+        trainer.setEpochs(200);
+
+        return nn;
+    }
+
     private static NeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
         imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
 
-        int[] kernelShape = {7, 7};
         ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                inputLayer, kernelShape, 20);
-        SigmoidLayer sigmoidLayer = new SigmoidLayer(convolutionLayer, convolutionLayer.getNeurons().size());
-        //ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-        //        20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
+                20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
         System.out.print(".");
 
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, sigmoidLayer);
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
         System.out.print(".");
 
         StandardLayer standardLayer = new StandardLayer(
@@ -128,7 +161,7 @@ public class MnistTester {
                 10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
 
         NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(),
-                convolutionLayer, sigmoidLayer, poolingLayer, standardLayer, outputLayer);
+                convolutionLayer, poolingLayer, standardLayer, outputLayer);
         System.out.println(".");
 
         trainer.setNeuralNetwork(nn);
