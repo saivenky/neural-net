@@ -2,7 +2,6 @@ package saivenky.neural.c;
 
 import saivenky.neural.FilterDimensionCalculator;
 import saivenky.neural.NeuronSet;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.nio.ByteBuffer;
 
@@ -53,10 +52,5 @@ public class MaxPoolingLayer extends Layer {
 
     @Override
     public void gradientDescent(double rate) {
-    }
-
-    @Override
-    public void setSignalCostGradient(double[] cost) {
-        throw new NotImplementedException();
     }
 }

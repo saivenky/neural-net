@@ -6,12 +6,12 @@
 
 #define TWO_PI 6.28318530717958647692
 
-inline double randf() {
+inline double rand_uniform() {
   double result = (double)rand() / RAND_MAX;
   return result;
 }
 
-inline double randnormf() {
+inline double rand_norm() {
   static double z0, z1;
   static bool generate;
   generate = !generate;
@@ -19,8 +19,8 @@ inline double randnormf() {
 
   double u1, u2;
   do {
-    u1 = randf();
-    u2 = randf();
+    u1 = rand_uniform();
+    u2 = rand_uniform();
   } while (u1 <= DBL_MIN);
 
   z0 = sqrt(-2.0 * log(u1)) * cos(TWO_PI * u2);
@@ -28,8 +28,24 @@ inline double randnormf() {
   return z0;
 }
 
-inline void init_rand(double *array, int len) {
+inline double rand_truncated_norm() {
+  return fabs(rand_norm());
+}
+
+inline void init_rand_norm(double *array, int len) {
   for(int i = 0; i < len; i++) {
-    array[i] = randnormf();
+    array[i] = rand_norm();
+  }
+}
+
+inline void init_rand_truncated_norm(double *array, int len) {
+  for(int i = 0; i < len; i++) {
+    array[i] = rand_truncated_norm();
+  }
+}
+
+inline void init_const(double *array, int len, double value) {
+  for(int i = 0; i < len; i++) {
+    array[i] = value;
   }
 }

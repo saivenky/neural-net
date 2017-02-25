@@ -13,7 +13,5 @@ public interface ILayer {
     void backpropagate(boolean backpropagateToPreviousLayer);
 
     void gradientDescent(double rate);
-
-    void setSignalCostGradient(double[] cost);
 }
 

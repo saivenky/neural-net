@@ -7,8 +7,8 @@ import java.nio.ByteBuffer;
 /**
  * Created by saivenky on 2/19/17.
  */
-public class SigmoidLayer extends Layer {
-    public SigmoidLayer(Layer previousLayer) {
+public class ReluLayer extends Layer {
+    public ReluLayer(Layer previousLayer) {
         inputActivation = previousLayer.outputSignal;
         inputError = previousLayer.outputError;
         shape = previousLayer.shape;

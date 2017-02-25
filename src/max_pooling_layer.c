@@ -74,7 +74,8 @@ void feedforward_max_pooling_layer(struct max_pooling_layer *l) {
         }
 
         if (argMaxIndex == -1) {
-          printf("ERROR: argmax is -1\n");
+          printf("ERROR: max_pooling_layer - argmax is -1\n");
+          exit(-1);
         }
         int outIndex = outZ + outY + outX;
         l->outputSignal[outIndex] = maxActivation;

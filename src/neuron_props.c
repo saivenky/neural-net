@@ -6,9 +6,9 @@ struct properties *create_properties(int inputSize) {
   struct properties *p = malloc(sizeof(struct properties));
   p->inputSize = inputSize;
   p->weights = malloc(sizeof(double) * inputSize);
-  init_rand(p->weights, inputSize);
+  init_rand_norm(p->weights, inputSize);
   p->weightErrors = calloc(inputSize, sizeof(double));
-  p->bias = randnormf();
+  p->bias = rand_norm();
   p->biasError = 0;
   return p;
 }

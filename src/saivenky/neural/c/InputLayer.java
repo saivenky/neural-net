@@ -47,8 +47,4 @@ public class InputLayer extends Layer implements IInputLayer {
     @Override
     public void gradientDescent(double rate) {
     }
-
-    @Override
-    public void setSignalCostGradient(double[] cost) {
-    }
 }

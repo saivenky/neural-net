@@ -1,7 +1,6 @@
 package saivenky.neural.c;
 
 import saivenky.neural.NeuronSet;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.nio.ByteBuffer;
 
@@ -56,10 +55,5 @@ public class FullyConnectedLayer extends Layer {
     @Override
     public void gradientDescent(double rate) {
         update(nativeLayerPtr, rate);
-    }
-
-    @Override
-    public void setSignalCostGradient(double[] cost) {
-        throw new NotImplementedException();
     }
 }

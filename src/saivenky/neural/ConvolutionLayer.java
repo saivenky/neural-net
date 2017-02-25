@@ -28,14 +28,14 @@ public class ConvolutionLayer extends Layer {
         int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), segmentWidth, 1);
         int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), segmentHeight, 1);
         Neuron[] neuronArray = new Neuron[frames * outputWidth * outputHeight];
-        neurons = new ThreadedNeuronSet(neuronArray);
+        neurons = new NeuronSet(neuronArray);
         neurons.setShape(outputWidth, outputHeight, frames);
 
         for(int x = 0; x < neurons.getWidth(); x++) {
             for(int y = 0; y < neurons.getHeight(); y++) {
                 INeuron[] segment = input3DStructure.getSegment(
                         x, y, 0, segmentWidth, segmentHeight, input3DStructure.getDepth());
-                NeuronSet inputNeuronSet = new ThreadedNeuronSet(segment);
+                NeuronSet inputNeuronSet = new NeuronSet(segment);
                 for(int f = 0; f < frames; f++) {
                     neurons.set(x, y, f, new Neuron(properties[f], inputNeuronSet, activationFunction));
                 }

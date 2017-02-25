@@ -16,14 +16,14 @@ public class MaxPoolingLayer extends Layer {
         int outputDepth = input3DStructure.getDepth();
 
         INeuron[] neuronArray = new INeuron[outputWidth * outputHeight * outputDepth];
-        neurons = new ThreadedNeuronSet(neuronArray);
+        neurons = new NeuronSet(neuronArray);
         neurons.setShape(outputWidth, outputHeight, outputDepth);
 
         for(int x = 0, inX = 0; x < neurons.getWidth(); x++, inX+=poolWidth) {
             for(int y = 0, inY = 0; y < neurons.getHeight(); y++, inY+=poolHeight) {
                 for(int z = 0; z < neurons.getDepth(); z++) {
                     INeuron[] segment = input3DStructure.getSegment(inX, inY, z, poolWidth, poolHeight, 1);
-                    NeuronSet neuronSet = new ThreadedNeuronSet(segment);
+                    NeuronSet neuronSet = new NeuronSet(segment);
                     neurons.set(x, y, z, new MaxPoolingNeuron(neuronSet));
                 }
             }
