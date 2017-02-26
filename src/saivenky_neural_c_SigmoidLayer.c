@@ -32,9 +32,3 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_backpropogate
   struct sigmoid_layer *layer = (struct sigmoid_layer *)nativeLayerPtr;
   backpropogate_sigmoid_layer(layer);
 }
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_update
-(JNIEnv *env, jobject obj, jlong nativeLayerPtr, jdouble rate) {
-  struct sigmoid_layer *layer = (struct sigmoid_layer *)nativeLayerPtr;
-  update_sigmoid_layer(layer);
-}

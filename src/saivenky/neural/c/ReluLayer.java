@@ -22,7 +22,6 @@ public class ReluLayer extends Layer {
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);
     private native void backpropogate(long nativeLayerPtr);
-    private native void update(long nativeLayerPtr, double rate);
 
     @Override
     public NeuronSet getNeurons() {
@@ -46,6 +45,5 @@ public class ReluLayer extends Layer {
 
     @Override
     public void gradientDescent(double rate) {
-        update(nativeLayerPtr, rate);
     }
 }

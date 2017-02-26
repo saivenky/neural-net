@@ -30,6 +30,9 @@ public abstract class Layer implements ILayer, IOutputLayer {
         neurons.gradientDescent(rate);
     }
 
+    public void setExpected(double[] expected) {
+    }
+
     public void setSignalCostGradient(double[] cost) {
         for (int i = 0; i < neurons.size(); i++) {
             neurons.get(i).setSignalCostGradient(cost[i]);

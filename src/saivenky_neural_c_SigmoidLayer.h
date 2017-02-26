@@ -7,6 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef saivenky_neural_c_SigmoidLayer_SIZEOF_DOUBLE
+#define saivenky_neural_c_SigmoidLayer_SIZEOF_DOUBLE 8L
 /*
  * Class:     saivenky_neural_c_SigmoidLayer
  * Method:    create
@@ -38,14 +40,6 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_feedforward
  */
 JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_backpropogate
   (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_SigmoidLayer
- * Method:    update
- * Signature: (JD)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_update
-  (JNIEnv *, jobject, jlong, jdouble);
 
 #ifdef __cplusplus
 }

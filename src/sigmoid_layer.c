@@ -44,6 +44,3 @@ void backpropogate_sigmoid_layer(struct sigmoid_layer *l) {
   }
   memset(l->outputError, 0, l->size * sizeof(double));
 }
-
-void update_sigmoid_layer(struct sigmoid_layer *l) {
-}

@@ -75,6 +75,7 @@ public class NeuralNetwork {
     }
 
     private void backpropagate(double[] output) {
+        outputLayer.setExpected(output);
         double[] cost = costFunction.f1(predicted, output);
         outputLayer.setSignalCostGradient(cost);
 

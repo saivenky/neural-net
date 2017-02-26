@@ -32,9 +32,3 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_backpropogate
   struct relu_layer *layer = (struct relu_layer *)nativeLayerPtr;
   backpropogate_relu_layer(layer);
 }
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_update
-(JNIEnv *env, jobject obj, jlong nativeLayerPtr, jdouble rate) {
-  struct relu_layer *layer = (struct relu_layer *)nativeLayerPtr;
-  update_relu_layer(layer);
-}

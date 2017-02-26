@@ -41,14 +41,6 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_feedforward
 JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_backpropogate
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_ReluLayer
- * Method:    update
- * Signature: (JD)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_update
-  (JNIEnv *, jobject, jlong, jdouble);
-
 #ifdef __cplusplus
 }
 #endif

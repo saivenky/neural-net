@@ -12,5 +12,4 @@ struct sigmoid_layer *create_sigmoid_layer(long size, double *inputActivation, d
 void destroy_sigmoid_layer(struct sigmoid_layer *l);
 void feedforward_sigmoid_layer(struct sigmoid_layer *l);
 void backpropogate_sigmoid_layer(struct sigmoid_layer *l);
-void update_sigmoid_layer(struct sigmoid_layer *l);
 #endif

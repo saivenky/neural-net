@@ -19,3 +19,13 @@ void ReleaseIntArray(JNIEnv *env, struct JIntArray *array, jint mode) {
     (*env)->ReleaseIntArrayElements(env, array->jarray, array->array, mode);
   }
 }
+
+void GetDoubleArray(JNIEnv *env, struct JDoubleArray *array) {
+  array->array = (*env)->GetDoubleArrayElements(env, array->jarray, &(array->isCopy));
+}
+
+void ReleaseDoubleArray(JNIEnv *env, struct JDoubleArray *array, jint mode) {
+  if (array->isCopy == JNI_TRUE) {
+    (*env)->ReleaseDoubleArrayElements(env, array->jarray, array->array, mode);
+  }
+}

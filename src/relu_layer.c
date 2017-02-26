@@ -49,6 +49,3 @@ void backpropogate_relu_layer(struct relu_layer *l) {
   }
   memset(l->outputError, 0, l->size * sizeof(double));
 }
-
-void update_relu_layer(struct relu_layer *l) {
-}
