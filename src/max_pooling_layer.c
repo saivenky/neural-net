@@ -19,7 +19,7 @@ struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolSha
   struct max_pooling_layer *l = malloc(sizeof(struct max_pooling_layer));
   l->inputShape = create_shape(inputShape);
   l->poolShape = create_shape(poolShape);
-  l->outputShape = calcoutsize(l->inputShape, l->poolShape, stride, 1);
+  l->outputShape = calcoutsize(l->inputShape, l->poolShape, 0, stride, 1);
 
   l->inputDim = calcdim(l->inputShape);
   l->outputDim = calcdim(l->outputShape);

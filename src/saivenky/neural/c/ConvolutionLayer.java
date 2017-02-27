@@ -9,24 +9,24 @@ import java.nio.ByteBuffer;
  * Created by saivenky on 2/16/17.
  */
 public class ConvolutionLayer extends Layer {
-    public ConvolutionLayer(Layer previousLayer, int[] kernelShapeWithoutDepth, int frames) {
+    public ConvolutionLayer(Layer previousLayer, int[] kernelShapeWithoutDepth, int frames, int padding) {
         System.out.printf("Creating %s\n", this.getClass().toString());
         int[] kernelShape = { kernelShapeWithoutDepth[0], kernelShapeWithoutDepth[1], previousLayer.shape[2] };
         shape = new int[] {
-            FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[0], kernelShape[0], 1),
-            FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[1], kernelShape[1], 1),
+            FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[0], kernelShape[0], 1, padding),
+            FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[1], kernelShape[1], 1, padding),
             frames
         };
 
         inputActivation = previousLayer.outputSignal;
         inputError = previousLayer.outputError;
 
-        nativeLayerPtr = create(previousLayer.shape, kernelShape, frames, 1, inputActivation, inputError);
+        nativeLayerPtr = create(previousLayer.shape, kernelShape, frames, 1, padding, inputActivation, inputError);
         adjustByteOrderOnBuffers();
     }
 
     private native long create(
-            int[] inputShape, int[] kernelShape, int frames, int stride,
+            int[] inputShape, int[] kernelShape, int frames, int stride, int padding,
             ByteBuffer inputActivation, ByteBuffer inputError);
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);

@@ -5,11 +5,12 @@
 #include "kernel_dim.h"
 #include "convolution_layer.h"
 
-struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, double *inputActivation, double *inputError) {
+struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, int padding, double *inputActivation, double *inputError) {
   struct convolution_layer *l = malloc(sizeof(struct convolution_layer));
   l->inputShape = create_shape(inputShape);
   l->kernelShape = create_shape(kernelShape);
-  l->outputShape = calcoutsize(l->inputShape, l->kernelShape, stride, frames);
+  l->padding = padding;
+  l->outputShape = calcoutsize(l->inputShape, l->kernelShape, l->padding, stride, frames);
   l->inputDim = calcdim(l->inputShape);
   l->outputDim = calcdim(l->outputShape);
   l->kernelDim = calcdim(l->kernelShape);
@@ -60,17 +61,22 @@ struct frame_args {
 };
 
 void feedforward_convolution_layer(struct convolution_layer *l) {
+  int yStart = -(l->padding * l->inputDim.dim0);
+  int xStart = -(l->padding);
+
   for (int outZ = 0, frame = 0; outZ < l->outputDim.dim2; outZ += l->outputDim.dim1, frame++) {
     double *weights = l->props[frame]->weights;
     double bias = l->props[frame]->bias;
-    for (int outY = 0, inYInit = 0; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
-      for (int outX = 0; outX < l->outputDim.dim0; outX++) {
+    for (int outY = 0, inYInit = yStart; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
+      for (int outX = 0, inXInit = xStart; outX < l->outputDim.dim0; outX++, inXInit++) {
 
         double sum = 0;
         for (int kernZ = 0, inZ = 0; kernZ < l->kernelDim.dim2; kernZ += l->kernelDim.dim1, inZ += l->inputDim.dim1) {
-          for (int kernY = 0, inYZ = inZ + inYInit; kernY < l->kernelDim.dim1; kernY += l->kernelDim.dim0, inYZ += l->inputDim.dim0) {
-            for (int kernX = 0, inXYZ = inYZ + outX; kernX < l->kernelDim.dim0; kernX++, inXYZ++) {
-              double activation = l->inputActivation[inXYZ];
+          for (int kernY = 0, inY = inYInit; kernY < l->kernelDim.dim1 && inY < l->inputDim.dim1; kernY += l->kernelDim.dim0, inY += l->inputDim.dim0) {
+            if (inY < 0) continue;
+            for (int kernX = 0, inX = inXInit; kernX < l->kernelDim.dim0 && inX < l->inputDim.dim0; kernX++, inX++) {
+              if (inX < 0) continue;
+              double activation = l->inputActivation[inX + inY + inZ];
               double weight = weights[kernZ + kernY + kernX];
               sum += activation * weight;
             }
@@ -85,17 +91,22 @@ void feedforward_convolution_layer(struct convolution_layer *l) {
 }
 
 void backpropogate_to_input_convolution_layer(struct convolution_layer *l) {
+  int yStart = -(l->padding * l->inputDim.dim0);
+  int xStart = -(l->padding);
+
   for (int outZ = 0, frame = 0; outZ < l->outputDim.dim2; outZ += l->outputDim.dim1, frame++) {
     double *weights = l->props[frame]->weights;
-    for (int outY = 0, inYInit = 0; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
-      for (int outX = 0; outX < l->outputDim.dim0; outX++) {
+    for (int outY = 0, inYInit = yStart; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
+      for (int outX = 0, inXInit = xStart; outX < l->outputDim.dim0; outX++, inXInit++) {
         double error = l->outputError[outX + outY + outZ];
 
         for (int kernZ = 0, inZ = 0; kernZ < l->kernelDim.dim2; inZ += l->inputDim.dim1, kernZ += l->kernelDim.dim1) {
-          for (int kernY = 0, inYZ = inZ + inYInit; kernY < l->kernelDim.dim1; inYZ += l->inputDim.dim0, kernY += l->kernelDim.dim0) {
-            for (int kernX = 0, inXYZ = inYZ + outX; kernX < l->kernelDim.dim0; kernX++, inXYZ++) {
+          for (int kernY = 0, inY = inYInit; kernY < l->kernelDim.dim1 && inY < l->inputDim.dim1; inY += l->inputDim.dim0, kernY += l->kernelDim.dim0) {
+            if (inY < 0) continue;
+            for (int kernX = 0, inX = inXInit; kernX < l->kernelDim.dim0 && inX < l->inputDim.dim0; kernX++, inX++) {
+              if (inX < 0) continue;
               double weight = weights[kernZ + kernY + kernX];
-              l->inputError[inXYZ] += weight * error;
+              l->inputError[inZ + inY + inX] += weight * error;
             }
           }
         }
@@ -105,21 +116,24 @@ void backpropogate_to_input_convolution_layer(struct convolution_layer *l) {
 }
 
 void backpropogate_to_props_convolution_layer(struct convolution_layer *l) {
+  int yStart = -(l->padding * l->inputDim.dim0);
+  int xStart = -(l->padding);
+
   for (int outZ = 0, frame = 0; outZ < l->outputDim.dim2; outZ += l->outputDim.dim1, frame++) {
     struct properties *prop = l->props[frame];
-    for (int outY = 0, inYInit = 0; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
-      for (int outX = 0; outX < l->outputDim.dim0; outX++) {
+    for (int outY = 0, inYInit = yStart; outY < l->outputDim.dim1; outY += l->outputDim.dim0, inYInit += l->inputDim.dim0) {
+      for (int outX = 0, inXInit = xStart; outX < l->outputDim.dim0; outX++, inXInit++) {
 
         int outIndex = outZ + outY + outX;
         double error = l->outputError[outIndex];
         prop->biasError += error;
-
         for (int kernZ = 0, inZ = 0; kernZ < l->kernelDim.dim2; kernZ += l->kernelDim.dim1, inZ += l->inputDim.dim1) {
-          for (int kernY = 0, inYZ = inZ + inYInit; kernY < l->kernelDim.dim1; kernY += l->kernelDim.dim0, inYZ += l->inputDim.dim0) {
-            int kernYZ = kernY + kernZ;
-            for (int kernX = 0, inXYZ = inYZ + outX; kernX < l->kernelDim.dim0; kernX++, inXYZ++) {
-              double activation = l->inputActivation[inXYZ];
-              prop->weightErrors[kernYZ + kernX] += activation * error;
+          for (int kernY = 0, inY = inYInit; kernY < l->kernelDim.dim1 && inY < l->inputDim.dim1; kernY += l->kernelDim.dim0, inY += l->inputDim.dim0) {
+            if (inY < 0) continue;
+            for (int kernX = 0, inX = inXInit; kernX < l->kernelDim.dim0 && inX < l->inputDim.dim0; kernX++, inX++) {
+              if (inX < 0) continue;
+              double activation = l->inputActivation[inZ + inY + inX];
+              prop->weightErrors[kernZ + kernY + kernX] += activation * error;
             }
           }
         }

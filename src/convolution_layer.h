@@ -10,6 +10,7 @@ struct convolution_layer {
   struct dim inputDim;
   struct dim outputDim;
   struct dim kernelDim;
+  int padding;
   double *inputActivation;
   double *inputError;
   double *outputSignal;
@@ -17,7 +18,7 @@ struct convolution_layer {
   struct properties **props;
 };
 
-struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, double *inputActivation, double *inputError);
+struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, int padding, double *inputActivation, double *inputError);
 int destroy_convolution_layer(struct convolution_layer *l);
 void feedforward_convolution_layer(struct convolution_layer *l);
 void backpropogate_convolution_layer(struct convolution_layer *l);

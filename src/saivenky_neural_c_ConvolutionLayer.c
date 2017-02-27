@@ -5,7 +5,7 @@
 #include "jni_helper.h"
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
-  (JNIEnv * env, jobject object, jintArray inputShape, jintArray kernelShape, jint frames, jint stride,
+  (JNIEnv * env, jobject object, jintArray inputShape, jintArray kernelShape, jint frames, jint stride, jint padding,
    jobject jinputActivation, jobject jinputError) {
 
   struct JIntArray jinputShape, jkernelShape;
@@ -15,7 +15,7 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
   GetIntArray(env, &jkernelShape);
   double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
   double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
-  struct convolution_layer *layer = create_convolution_layer(jinputShape.array, jkernelShape.array, frames, stride, inputActivation, inputError);
+  struct convolution_layer *layer = create_convolution_layer(jinputShape.array, jkernelShape.array, frames, stride, padding, inputActivation, inputError);
   SetByteBuffer(env, object, "outputSignal", layer->outputSignal, layer->outputDim.dim2 * sizeof(double));
   SetByteBuffer(env, object, "outputError", layer->outputError, layer->outputDim.dim2 * sizeof(double));
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);

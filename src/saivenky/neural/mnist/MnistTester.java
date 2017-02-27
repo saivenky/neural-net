@@ -1,18 +1,14 @@
 package saivenky.neural.mnist;
 
 import saivenky.neural.*;
-import saivenky.neural.InputLayer;
-import saivenky.neural.MaxPoolingLayer;
 import saivenky.neural.activation.Linear;
-import saivenky.neural.activation.RectifiedLinear;
 import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.ConvolutionLayer;
-import saivenky.neural.c.*;
+import saivenky.neural.c.FullyConnectedLayer;
+import saivenky.neural.c.ReluLayer;
+import saivenky.neural.c.SoftmaxCrossEntropyLayer;
 import saivenky.neural.cost.CrossEntropy;
 import saivenky.neural.image.ImageWriter;
 import saivenky.neural.neuron.GaussianInitializer;
-import saivenky.neural.neuron.NeuronInitializer;
-import saivenky.neural.neuron.PositiveGaussianInitializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -77,25 +73,29 @@ public class MnistTester {
         trainer.setBatchSize(60);
         final boolean[] shouldEvaluateBatch = {true};
 
-        trainer.train(new NeuralNetworkTrainer.Evaluator() {
+        NeuralNetworkTrainer.Evaluator epochEvaluator = new NeuralNetworkTrainer.Evaluator() {
             @Override
             public void f(int iteration, long timeTaken) {
                 System.out.printf("Epoch %d complete (%.3fs). Accuracy: %s\n", iteration, (double)timeTaken / 1000, checkLabels(nn, testData, testLabels, testData.length));
             }
-        }, new NeuralNetworkTrainer.Evaluator() {
+        };
+        NeuralNetworkTrainer.Evaluator batchEvaluator = new NeuralNetworkTrainer.Evaluator() {
             @Override
             public void f(int iteration, long timeTaken) {
                 if (timeTaken < 30) return;
                 if (shouldEvaluateBatch[0]) {
                     double accuracy = checkLabels(nn, testData, testLabels, 100);
-                    System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double)timeTaken / 1000, accuracy);
+                    System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double) timeTaken / 1000, accuracy);
                     if (accuracy > 0.9) shouldEvaluateBatch[0] = false;
-                }
-                else {
-                    System.out.printf("Batch %d complete (%.3fs).\n", iteration, (double)timeTaken / 1000);
+                } else {
+                    System.out.printf("Batch %d complete (%.3fs).\n", iteration, (double) timeTaken / 1000);
                 }
             }
-        });
+        };
+        trainer.train(epochEvaluator, batchEvaluator);
+        trainer.setEpochs(1);
+        trainer.setLearningRate(0.0001);
+        trainer.train(epochEvaluator, batchEvaluator);
 
         System.out.println("test data correct: " + checkLabelsAndWriteIncorrect(nn, testData, testLabels, outputDir));
     }
@@ -121,8 +121,9 @@ public class MnistTester {
         int[] poolShape = {2, 2, 1};
 
         saivenky.neural.c.ConvolutionLayer convolutionLayer = new saivenky.neural.c.ConvolutionLayer(
-                inputLayer, kernelShape, 20);
-        saivenky.neural.c.MaxPoolingLayer poolingLayer = new saivenky.neural.c.MaxPoolingLayer(convolutionLayer, poolShape, 2);
+                inputLayer, kernelShape, 20, 0);
+        saivenky.neural.c.MaxPoolingLayer poolingLayer = new saivenky.neural.c.MaxPoolingLayer(
+                convolutionLayer, poolShape, 2);
         saivenky.neural.c.ReluLayer reluLayer1 = new saivenky.neural.c.ReluLayer(poolingLayer);
 
         FullyConnectedLayer fcLayer1 = new FullyConnectedLayer(reluLayer1, 100);
@@ -141,8 +142,8 @@ public class MnistTester {
         System.out.println("...");
 
         trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(0.0002);
-        trainer.setEpochs(200);
+        trainer.setLearningRate(0.03);
+        trainer.setEpochs(1);
 
         return nn;
     }

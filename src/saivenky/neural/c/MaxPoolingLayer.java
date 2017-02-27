@@ -11,8 +11,8 @@ import java.nio.ByteBuffer;
 public class MaxPoolingLayer extends Layer {
     public MaxPoolingLayer(Layer previousLayer, int[] poolShape, int stride) {
         shape = new int[] {
-                FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[0], poolShape[0], stride),
-                FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[1], poolShape[1], stride),
+                FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[0], poolShape[0], stride, 0),
+                FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[1], poolShape[1], stride, 0),
                 previousLayer.shape[2]
         };
         inputActivation = previousLayer.outputSignal;

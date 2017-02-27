@@ -11,8 +11,8 @@ public class MaxPoolingLayer extends Layer {
     }
 
     private void initializeNeurons(int poolWidth, int poolHeight, Spatial3DStructure input3DStructure) {
-        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), poolWidth, poolWidth);
-        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), poolHeight, poolHeight);
+        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), poolWidth, poolWidth, 0);
+        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), poolHeight, poolHeight, 0);
         int outputDepth = input3DStructure.getDepth();
 
         INeuron[] neuronArray = new INeuron[outputWidth * outputHeight * outputDepth];

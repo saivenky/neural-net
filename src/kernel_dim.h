@@ -14,6 +14,6 @@ struct dim {
 };
 
 struct shape create_shape(int *shape);
-struct shape calcoutsize(struct shape inputShape, struct shape kernelShape, int stride, int frames);
+struct shape calcoutsize(struct shape inputShape, struct shape kernelShape, int padding, int stride, int frames);
 struct dim calcdim(struct shape);
 #endif

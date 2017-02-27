@@ -25,8 +25,8 @@ public class ConvolutionLayer extends Layer {
     private void initializeNeurons(NeuronProperties[] properties, int frames, int segmentWidth, int segmentHeight,
                                    Spatial3DStructure input3DStructure,
                                    ActivationFunction activationFunction) {
-        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), segmentWidth, 1);
-        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), segmentHeight, 1);
+        int outputWidth = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getWidth(), segmentWidth, 1, 0);
+        int outputHeight = FilterDimensionCalculator.calculateOutputSize(input3DStructure.getHeight(), segmentHeight, 1, 0);
         Neuron[] neuronArray = new Neuron[frames * outputWidth * outputHeight];
         neurons = new NeuronSet(neuronArray);
         neurons.setShape(outputWidth, outputHeight, frames);
