@@ -32,8 +32,8 @@ struct fully_connected_layer *create_fully_connected_layer(long inputSize, long 
   l->biases = malloc(outputSize * sizeof(double));
   l->weightErrors = calloc(weightsLen, sizeof(double));
   l->biasErrors = calloc(outputSize, sizeof(double));
-  init_rand_norm(l->weights, weightsLen, 1.0);
-  init_rand_norm(l->biases, outputSize, 1.0);
+  init_rand_truncated_norm(l->weights, weightsLen, 0.1);
+  init_const(l->biases, outputSize, 0.1);
   return l;
 }
 

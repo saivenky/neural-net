@@ -32,7 +32,11 @@ inline double rand_norm(double stdev) {
 }
 
 inline double rand_truncated_norm(double stdev) {
-  return fabs(rand_norm(stdev));
+  double n;
+  do {
+    n = rand_norm(stdev);
+  } while (fabs(n / stdev) >= 2.0);
+  return n;
 }
 
 inline void init_rand_norm(double *array, int len, double stdev) {
