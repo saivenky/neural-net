@@ -1,6 +1,9 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "activation.h"
+#include "gradient.h"
 #include "relu_layer.h"
 
 double relu(double z) {
@@ -17,35 +20,35 @@ double relu1(double z) {
   return 1.0;
 }
 
-struct relu_layer *create_relu_layer(long size, double *inputActivation, double *inputError) {
+struct relu_layer *create_relu_layer(int size) {
   struct relu_layer *l = malloc(sizeof(struct relu_layer));
   l->size = size;
-  l->inputActivation = inputActivation;
-  l->inputError = inputError;
-
-  l->outputSignal = malloc(size * sizeof(double));
-  l->outputError = calloc(size, sizeof(double));
-
   return l;
 }
 
+struct activation create_activation_relu_layer(struct relu_layer *l, double *inputActivation) {
+  return create_activation(inputActivation, l->size);
+}
+
+struct gradient create_gradient_relu_layer(struct relu_layer *l, double *inputError) {
+  return create_gradient(inputError, l->size);
+}
+
 void destroy_relu_layer(struct relu_layer *l) {
-  free(l->outputSignal);
-  free(l->outputError);
   free(l);
 }
 
-void feedforward_relu_layer(struct relu_layer *layer) {
-  for (int i = 0; i < layer->size; i++) {
-    layer->outputSignal[i] = relu(layer->inputActivation[i]);
+void feedforward_relu_layer(struct relu_layer *l, struct activation a) {
+  for (int i = 0; i < l->size; i++) {
+    a.outputSignal[i] = relu(a.inputActivation[i]);
   }
 }
 
-void backpropogate_relu_layer(struct relu_layer *l) {
-  if (l->inputError != NULL) {
+void backpropogate_relu_layer(struct relu_layer *l, struct activation a, struct gradient g) {
+  if (g.inputError != NULL) {
     for (int i = 0; i < l->size; i++) {
-      l->inputError[i] += relu1(l->inputActivation[i]) * l->outputError[i];
+      g.inputError[i] += relu1(a.inputActivation[i]) * g.outputError[i];
     }
   }
-  memset(l->outputError, 0, l->size * sizeof(double));
+  memset(g.outputError, 0, l->size * sizeof(double));
 }

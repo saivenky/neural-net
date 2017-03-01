@@ -10,15 +10,13 @@ struct max_pooling_layer {
   struct dim outputDim;
   struct dim poolDim;
   struct dim inputStrideDim;
-  double *inputActivation;
-  double *inputError;
-  double *outputSignal;
-  double *outputError;
-  int *outputArgmaxIndex;
 };
 
 struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolShape, int stride, double *inputActivation, double *inputError);
+struct activation create_activation_max_pooling_layer(struct max_pooling_layer *l, double *inputActivation);
+struct gradient create_gradient_max_pooling_layer(struct max_pooling_layer *l, double *inputError);
 int destroy_max_pooling_layer(struct max_pooling_layer *l);
-void feedforward_max_pooling_layer(struct max_pooling_layer *l);
-void backpropogate_max_pooling_layer(struct max_pooling_layer *l);
+
+void feedforward_max_pooling_layer(struct max_pooling_layer *l, struct activation);
+void backpropogate_max_pooling_layer(struct max_pooling_layer *l, struct activation, struct gradient);
 #endif

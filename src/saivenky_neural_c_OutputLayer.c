@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "saivenky_neural_c_OutputLayer.h"
+#include "network_layer.h"
 #include "output_layer.h"
 #include "jni_helper.h"
 
@@ -7,10 +8,12 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_OutputLayer_create
 (JNIEnv *env, jobject obj, jint size, jobject jinputActivation, jobject jinputError) {
   double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
   double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
-  struct output_layer *layer = create_output_layer(size, inputActivation, inputError);
-  SetByteBuffer(env, obj, "inputActivation", layer->inputActivation, size * sizeof(double));
-  SetByteBuffer(env, obj, "inputError", layer->inputError, size * sizeof(double));
-  jlong returnValue = (jlong) layer;
+  struct output_layer *layer = create_output_layer(size);
+  struct network_layer *network_layer = create_network_layer(layer);
+  network_layer->activation = create_activation_output_layer(inputActivation);
+  network_layer->gradient = create_gradient_output_layer(inputError);
+  copy_network_layer_buffers(env, obj, network_layer, size);
+  jlong returnValue = (jlong) network_layer;
   return returnValue;
 }
 

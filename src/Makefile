@@ -5,6 +5,10 @@ JNI=-I"/usr/lib/jvm/java-8-oracle/include" -I"/usr/lib/jvm/java-8-oracle/include
 all: libneural.so
 clean:
 	rm *.so *.o
+activation.o: activation.c
+	${CC} ${FLAGS} -c activation.c
+gradient.o: gradient.c
+	${CC} ${FLAGS} -c gradient.c
 jni_helper.o: jni_helper.c
 	${CC} ${JNI} ${FLAGS} -c jni_helper.c
 rand.o: rand.c
@@ -17,5 +21,5 @@ sigmoid_layer.o: sigmoid_layer.c
 	${CC} ${FLAGS} -c sigmoid_layer.c -lm
 %_layer.o: %_layer.c
 	${CC} ${FLAGS} -c $<
-libneural.so: saivenky_neural_c_*.c $(patsubst %.c,%.o,$(wildcard *_layer.c)) jni_helper.o rand.o neuron_props.o kernel_dim.o
+libneural.so: saivenky_neural_c_*.c $(patsubst %.c,%.o,$(wildcard *_layer.c)) jni_helper.o rand.o neuron_props.o kernel_dim.o activation.o gradient.o
 	${CC} ${JNI} ${FLAGS} -o libneural.so -shared -Wl,-soname,neural.so $^

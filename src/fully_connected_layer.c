@@ -4,28 +4,13 @@
 #include "fully_connected_layer.h"
 #include "neuron_props.h"
 #include "rand.h"
+#include "activation.h"
+#include "gradient.h"
 
-struct fully_connected_layer *create_fully_connected_layer(long inputSize, long outputSize, double *inputActivation, double *inputError) {
+struct fully_connected_layer *create_fully_connected_layer(int inputSize, int outputSize) {
   struct fully_connected_layer *l = malloc(sizeof(struct fully_connected_layer));
   l->inputSize = inputSize;
   l->outputSize = outputSize;
-
-  if (inputActivation == NULL) {
-    printf("ERROR: inputActivation is NULL\n");
-    fflush(stdout);
-  }
-
-  l->inputActivation = inputActivation;
-
-  if (inputError == NULL) {
-    printf("NATIVE: inputError is NULL\n");
-    fflush(stdout);
-  }
-
-  l->inputError = inputError;
-
-  l->outputSignal = malloc(outputSize * sizeof(double));
-  l->outputError = calloc(outputSize, sizeof(double));
 
   int weightsLen = inputSize * outputSize;
   l->weights = malloc(weightsLen * sizeof(double));
@@ -37,9 +22,15 @@ struct fully_connected_layer *create_fully_connected_layer(long inputSize, long 
   return l;
 }
 
+struct activation create_activation_fully_connected_layer(struct fully_connected_layer *l, double *inputActivation) {
+  return create_activation(inputActivation, l->outputSize);
+}
+
+struct gradient create_gradient_fully_connected_layer(struct fully_connected_layer *l, double *inputError) {
+  return create_gradient(inputError, l->outputSize);
+}
+
 int destroy_fully_connected_layer(struct fully_connected_layer *l) {
-  free(l->outputSignal);
-  free(l->outputError);
   free(l->weights);
   free(l->biases);
   free(l->weightErrors);
@@ -48,42 +39,42 @@ int destroy_fully_connected_layer(struct fully_connected_layer *l) {
   return 0;
 }
 
-void feedforward_fully_connected_layer(struct fully_connected_layer *l) {
+void feedforward_fully_connected_layer(struct fully_connected_layer *l, struct activation a) {
   for (int i = 0; i < l->outputSize; i++) {
     double sum = l->biases[i];
     double *weights = l->weights + i * l->inputSize;
     for (int j = 0; j < l->inputSize; j++) {
-      sum += l->inputActivation[j] * weights[j];
+      sum += a.inputActivation[j] * weights[j];
     }
-    l->outputSignal[i] = sum;
+    a.outputSignal[i] = sum;
   }
 }
 
-void backpropogate_fully_connected_layer(struct fully_connected_layer *l) {
-  backpropogate_to_props_fully_connected_layer(l);
-  if (l->inputError != NULL) {
-    backpropogate_to_input_fully_connected_layer(l);
+void backpropogate_fully_connected_layer(struct fully_connected_layer *l, struct activation a, struct gradient g) {
+  backpropogate_to_props_fully_connected_layer(l, a, g);
+  if (g.inputError != NULL) {
+    backpropogate_to_input_fully_connected_layer(l, g);
   }
-  memset(l->outputError, 0, l->outputSize * sizeof(double));
+  memset(g.outputError, 0, l->outputSize * sizeof(double));
 }
 
-void backpropogate_to_input_fully_connected_layer(struct fully_connected_layer *l) {
+void backpropogate_to_input_fully_connected_layer(struct fully_connected_layer *l, struct gradient g) {
   for (int i = 0; i < l->outputSize; i++) {
-    double error = l->outputError[i];
+    double error = g.outputError[i];
     double *weights = l->weights + i * l->inputSize;
     for (int j = 0; j < l->inputSize; j++) {
-      l->inputError[j] += error * weights[j];
+      g.inputError[j] += error * weights[j];
     }
   }
 }
 
-void backpropogate_to_props_fully_connected_layer(struct fully_connected_layer *l) {
+void backpropogate_to_props_fully_connected_layer(struct fully_connected_layer *l, struct activation a, struct gradient g) {
   for (int i = 0; i < l->outputSize; i++) {
-    double error = l->outputError[i];
+    double error = g.outputError[i];
     l->biasErrors[i] += error;
     double *weightErrors = l->weightErrors + i * l->inputSize;
     for(int j = 0; j < l->inputSize; j++) {
-      weightErrors[j] += error * l->inputActivation[j];
+      weightErrors[j] += error * a.inputActivation[j];
     }
   }
 }
