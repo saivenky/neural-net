@@ -12,7 +12,7 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_create
   GetIntArray(env, &jpoolShape);
   double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
   double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
-  struct max_pooling_layer *layer = create_max_pooling_layer(jinputShape.array, jpoolShape.array, stride, inputActivation, inputError);
+  struct max_pooling_layer *layer = create_max_pooling_layer(jinputShape.array, jpoolShape.array, stride);
   struct network_layer *network_layer = create_network_layer(layer);
   network_layer->activation = create_activation_max_pooling_layer(network_layer->layer, inputActivation);
   network_layer->gradient = create_gradient_max_pooling_layer(network_layer->layer, inputError);

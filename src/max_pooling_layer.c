@@ -16,7 +16,7 @@ struct dim dim2stridedim(struct dim dim, int stride) {
   return stridedim;
 }
 
-struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolShape, int stride, double *inputActivation, double *inputError) {
+struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolShape, int stride) {
   struct max_pooling_layer *l = malloc(sizeof(struct max_pooling_layer));
   l->inputShape = create_shape(inputShape);
   l->poolShape = create_shape(poolShape);
