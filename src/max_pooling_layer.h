@@ -6,10 +6,7 @@ struct max_pooling_layer {
   struct shape inputShape;
   struct shape outputShape;
   struct shape poolShape;
-  struct dim inputDim;
-  struct dim outputDim;
-  struct dim poolDim;
-  struct dim inputStrideDim;
+  struct stride inputStride;
 };
 
 struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolShape, int stride);

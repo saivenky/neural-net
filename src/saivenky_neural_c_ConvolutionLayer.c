@@ -21,7 +21,7 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
   struct network_layer *network_layer = create_network_layer(layer);
   network_layer->activation = create_activation_convolution_layer(layer, inputActivation);
   network_layer->gradient = create_gradient_convolution_layer(layer, inputError);
-  copy_network_layer_buffers(env, obj, network_layer, layer->outputDim.dim2);
+  copy_network_layer_buffers(env, obj, network_layer, layer->outputShape.dim2);
 
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jkernelShape, JNI_ABORT);

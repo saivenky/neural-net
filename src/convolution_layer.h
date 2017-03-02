@@ -9,9 +9,6 @@ struct convolution_layer {
   struct shape inputShape;
   struct shape outputShape;
   struct shape kernelShape;
-  struct dim inputDim;
-  struct dim outputDim;
-  struct dim kernelDim;
   int padding;
   struct properties **props;
 };
