@@ -7,15 +7,16 @@
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
 (JNIEnv * env, jobject obj, jintArray inputShape, jintArray kernelShape, jint frames, jint stride, jint padding,
- jobject jinputActivation, jobject jinputError) {
+ jlong previousLayerNativePtr) {
 
   struct JIntArray jinputShape, jkernelShape;
   jinputShape.jarray = inputShape;
   jkernelShape.jarray = kernelShape;
   GetIntArray(env, &jinputShape);
   GetIntArray(env, &jkernelShape);
-  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
-  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+  struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
+  double *inputActivation = previousLayer->activation.outputSignal;
+  double *inputError = previousLayer->gradient.outputError;
 
   struct convolution_layer *layer = create_convolution_layer(jinputShape.array, jkernelShape.array, frames, stride, padding);
   struct network_layer *network_layer = create_network_layer(layer);

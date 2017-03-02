@@ -12,10 +12,10 @@ extern "C" {
 /*
  * Class:     saivenky_neural_c_MaxPoolingLayer
  * Method:    create
- * Signature: ([I[IILjava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)J
+ * Signature: ([I[IIJ)J
  */
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_create
-  (JNIEnv *, jobject, jintArray, jintArray, jint, jobject, jobject);
+  (JNIEnv *, jobject, jintArray, jintArray, jint, jlong);
 
 /*
  * Class:     saivenky_neural_c_MaxPoolingLayer

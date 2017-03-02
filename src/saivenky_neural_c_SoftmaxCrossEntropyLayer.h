@@ -12,10 +12,10 @@ extern "C" {
 /*
  * Class:     saivenky_neural_c_SoftmaxCrossEntropyLayer
  * Method:    create
- * Signature: (ILjava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)J
+ * Signature: (IJ)J
  */
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_create
-  (JNIEnv *, jobject, jint, jobject, jobject);
+  (JNIEnv *, jobject, jint, jlong);
 
 /*
  * Class:     saivenky_neural_c_SoftmaxCrossEntropyLayer

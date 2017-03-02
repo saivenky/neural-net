@@ -12,10 +12,10 @@ extern "C" {
 /*
  * Class:     saivenky_neural_c_FullyConnectedLayer
  * Method:    create
- * Signature: (JJLjava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)J
+ * Signature: (JJJ)J
  */
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_FullyConnectedLayer_create
-  (JNIEnv *, jobject, jlong, jlong, jobject, jobject);
+  (JNIEnv *, jobject, jlong, jlong, jlong);
 
 /*
  * Class:     saivenky_neural_c_FullyConnectedLayer

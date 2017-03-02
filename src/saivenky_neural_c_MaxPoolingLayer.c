@@ -4,14 +4,15 @@
 #include "network_layer.h"
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_create
-(JNIEnv *env, jobject obj, jintArray inputShape, jintArray poolShape, jint stride, jobject jinputActivation, jobject jinputError) {
+(JNIEnv *env, jobject obj, jintArray inputShape, jintArray poolShape, jint stride, jlong previousLayerNativePtr) {
   struct JIntArray jinputShape, jpoolShape;
   jinputShape.jarray = inputShape;
   jpoolShape.jarray = poolShape;
   GetIntArray(env, &jinputShape);
   GetIntArray(env, &jpoolShape);
-  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
-  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+  struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
+  double *inputActivation = previousLayer->activation.outputSignal;
+  double *inputError = previousLayer->gradient.outputError;
   struct max_pooling_layer *layer = create_max_pooling_layer(jinputShape.array, jpoolShape.array, stride);
   struct network_layer *network_layer = create_network_layer(layer);
   network_layer->activation = create_activation_max_pooling_layer(network_layer->layer, inputActivation);

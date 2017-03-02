@@ -3,8 +3,6 @@ package saivenky.neural.c;
 import saivenky.neural.FilterDimensionCalculator;
 import saivenky.neural.NeuronSet;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by saivenky on 2/22/17.
  */
@@ -18,14 +16,12 @@ public class MaxPoolingLayer extends Layer {
         inputActivation = previousLayer.outputSignal;
         inputError = previousLayer.outputError;
 
-        nativeLayerPtr = create(previousLayer.shape, poolShape, stride,
-                inputActivation, inputError);
+        nativeLayerPtr = create(previousLayer.shape, poolShape, stride, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
     }
 
     private native long create(
-            int[] inputShape, int[] poolShape, int stride,
-            ByteBuffer inputActivation, ByteBuffer inputError);
+            int[] inputShape, int[] poolShape, int stride, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);
     private native void backpropogate(long nativeLayerPtr);

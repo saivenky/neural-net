@@ -5,9 +5,10 @@
 #include "jni_helper.h"
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ReluLayer_create
-(JNIEnv * env, jobject obj, jint size, jobject jinputActivation, jobject jinputError) {
-  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
-  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+(JNIEnv * env, jobject obj, jint size, jlong previousLayerNativePtr) {
+  struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
+  double *inputActivation = previousLayer->activation.outputSignal;
+  double *inputError = previousLayer->gradient.outputError;
   struct relu_layer *layer = create_relu_layer(size);
   struct network_layer *network_layer = create_network_layer(layer);
   network_layer->activation = create_activation_relu_layer(layer, inputActivation);

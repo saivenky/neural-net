@@ -3,8 +3,6 @@ package saivenky.neural.c;
 import saivenky.neural.IOutputLayer;
 import saivenky.neural.NeuronSet;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by saivenky on 2/20/17.
  */
@@ -14,13 +12,13 @@ public class OutputLayer extends Layer implements IOutputLayer {
     public OutputLayer(Layer previousLayer) {
         shape = previousLayer.shape;
         size = previousLayer.shape[0] * previousLayer.shape[1] * previousLayer.shape[2];
-        nativeLayerPtr = create(size, previousLayer.outputSignal, previousLayer.outputError);
+        nativeLayerPtr = create(size, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
         outputSignal = inputActivation;
         outputError = inputError;
     }
 
-    private native long create(int size, ByteBuffer inputActivation, ByteBuffer inputError);
+    private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
 
     @Override

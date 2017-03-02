@@ -12,10 +12,10 @@ extern "C" {
 /*
  * Class:     saivenky_neural_c_ConvolutionLayer
  * Method:    create
- * Signature: ([I[IIIILjava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)J
+ * Signature: ([I[IIIIJ)J
  */
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
-  (JNIEnv *, jobject, jintArray, jintArray, jint, jint, jint, jobject, jobject);
+  (JNIEnv *, jobject, jintArray, jintArray, jint, jint, jint, jlong);
 
 /*
  * Class:     saivenky_neural_c_ConvolutionLayer

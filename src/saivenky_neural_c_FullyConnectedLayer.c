@@ -4,9 +4,11 @@
 #include "jni_helper.h"
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_FullyConnectedLayer_create
-(JNIEnv *env, jobject obj, jlong inputSize, jlong outputSize, jobject jinputActivation, jobject jinputError) {
-  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
-  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+(JNIEnv *env, jobject obj, jlong inputSize, jlong outputSize, jlong previousLayerNativePtr) {
+  struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
+  double *inputActivation = previousLayer->activation.outputSignal;
+  double *inputError = previousLayer->gradient.outputError;
+
   struct fully_connected_layer *layer = create_fully_connected_layer(inputSize, outputSize);
   struct network_layer *network_layer = create_network_layer(layer);
   network_layer->activation = create_activation_fully_connected_layer(layer, inputActivation);

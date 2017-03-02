@@ -3,8 +3,6 @@ package saivenky.neural.c;
 import saivenky.neural.FilterDimensionCalculator;
 import saivenky.neural.NeuronSet;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by saivenky on 2/16/17.
  */
@@ -21,13 +19,13 @@ public class ConvolutionLayer extends Layer {
         inputActivation = previousLayer.outputSignal;
         inputError = previousLayer.outputError;
 
-        nativeLayerPtr = create(previousLayer.shape, kernelShape, frames, 1, padding, inputActivation, inputError);
+        nativeLayerPtr = create(
+                previousLayer.shape, kernelShape, frames, 1, padding, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
     }
 
     private native long create(
-            int[] inputShape, int[] kernelShape, int frames, int stride, int padding,
-            ByteBuffer inputActivation, ByteBuffer inputError);
+            int[] inputShape, int[] kernelShape, int frames, int stride, int padding, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);
     private native void backpropogate(long nativeLayerPtr);

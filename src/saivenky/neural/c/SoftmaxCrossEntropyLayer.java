@@ -2,9 +2,6 @@ package saivenky.neural.c;
 
 import saivenky.neural.IOutputLayer;
 import saivenky.neural.NeuronSet;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.nio.ByteBuffer;
 
 /**
  * Created by saivenky on 2/25/17.
@@ -15,12 +12,12 @@ public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
     public SoftmaxCrossEntropyLayer(Layer previousLayer) {
         shape = previousLayer.shape;
         size = previousLayer.shape[0] * previousLayer.shape[1] * previousLayer.shape[2];
-        nativeLayerPtr = create(size, previousLayer.outputSignal, previousLayer.outputError);
+        nativeLayerPtr = create(size, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
         outputError = inputError;
     }
 
-    private native long create(int size, ByteBuffer inputActivation, ByteBuffer inputError);
+    private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);
     private native void setExpected(long nativeLayerPtr, double[] expected);

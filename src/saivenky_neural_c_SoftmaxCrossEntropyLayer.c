@@ -6,9 +6,10 @@
 #include "jni_helper.h"
 
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_create
-(JNIEnv *env, jobject obj, jint size, jobject jinputActivation, jobject jinputError) {
-  double *inputActivation = (jinputActivation == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputActivation);
-  double *inputError = (jinputError == NULL) ? NULL : (*env)->GetDirectBufferAddress(env, jinputError);
+(JNIEnv *env, jobject obj, jint size, jlong previousLayerNativePtr) {
+  struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
+  double *inputActivation = previousLayer->activation.outputSignal;
+  double *inputError = previousLayer->gradient.outputError;
 
   struct softmax_cross_entropy_layer *layer = create_softmax_cross_entropy_layer(size);
   struct network_layer *network_layer = create_network_layer(layer);
