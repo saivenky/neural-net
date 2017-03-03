@@ -27,14 +27,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_destroy
 
 /*
  * Class:     saivenky_neural_c_SoftmaxCrossEntropyLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_SoftmaxCrossEntropyLayer
  * Method:    setExpected
  * Signature: (J[[D)V
  */

@@ -19,29 +19,14 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
       layer,
       previousLayer,
       (create_activation_type)&create_activation_convolution_layer,
-      (create_gradient_type)&create_gradient_convolution_layer);
+      (create_gradient_type)&create_gradient_convolution_layer,
+      (feedforward_type)&feedforward_convolution_layer,
+      (backpropogate_type)&backpropogate_convolution_layer,
+      (update_type)&update_convolution_layer);
 
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jkernelShape, JNI_ABORT);
 
   jlong returnValue = (jlong) network_layer;
   return returnValue;
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_feedforward
-(JNIEnv *env, jobject object, jlong nativeLayerPtr) {
-  feedforward_network_layer((void *)nativeLayerPtr, (feedforward_type)&feedforward_convolution_layer);
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_backpropogate
-(JNIEnv *env, jobject object, jlong nativeLayerPtr) {
-  backpropogate_network_layer((void *)nativeLayerPtr, (backpropogate_type)&backpropogate_convolution_layer);
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_update
-(JNIEnv *env, jobject object, jlong nativeLayerPtr, jdouble rate) {
-  struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  for (int i = 0; i < l->miniBatchSize; i++) {
-    update_convolution_layer(l->layer, rate, l->gradients[i]);
-  }
 }

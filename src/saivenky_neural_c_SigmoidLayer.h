@@ -25,22 +25,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SigmoidLayer_create
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SigmoidLayer_destroy
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_SigmoidLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_SigmoidLayer
- * Method:    backpropogate
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_backpropogate
-  (JNIEnv *, jobject, jlong);
-
 #ifdef __cplusplus
 }
 #endif

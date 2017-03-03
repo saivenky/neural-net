@@ -17,7 +17,13 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_OutputLayer_create
   struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
   struct output_layer *layer = create_output_layer(size);
   struct network_layer *network_layer = create_network_layer(
-      layer, previousLayer, (create_activation_type)&create_activation_output_layer_wrapper, (create_gradient_type)&create_gradient_output_layer_wrapper);
+      layer,
+      previousLayer,
+      (create_activation_type)&create_activation_output_layer_wrapper,
+      (create_gradient_type)&create_gradient_output_layer_wrapper,
+      NULL,
+      NULL,
+      NULL);
   copy_network_layer_buffers(env, obj, network_layer, size);
   jlong returnValue = (jlong) network_layer;
   return returnValue;

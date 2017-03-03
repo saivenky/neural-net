@@ -6,8 +6,11 @@
 struct network_layer *create_network_layer(
     void *layer,
     struct network_layer *previousLayer,
-    struct activation (*create_activation)(void *,double *),
-    struct gradient (*create_gradient)(void *,double *)) {
+    create_activation_type create_activation,
+    create_gradient_type create_gradient,
+    feedforward_type feedforward,
+    backpropogate_type backpropogate,
+    update_type update) {
   struct network_layer *l = malloc(sizeof(struct network_layer));
   l->layer = layer;
   l->miniBatchSize = previousLayer->miniBatchSize;
@@ -21,27 +24,41 @@ struct network_layer *create_network_layer(
     l->gradients[i] = create_gradient(layer, outputError);
   }
 
+  l->create_activation = create_activation;
+  l->create_gradient = create_gradient;
+  l->feedforward = feedforward;
+  l->backpropogate = backpropogate;
+  l->update = update;
+
   return l;
 }
 
-void feedforward_network_layer(
-    void *nativeLayerPtr,
-    void (*feedforward_layer)(void *,struct activation)) {
+void feedforward_network_layer(void *nativeLayerPtr) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
+  if (network_layer->feedforward == NULL) return;
   for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    feedforward_layer(
+    network_layer->feedforward(
         network_layer->layer, network_layer->activations[i]);
   }
 }
 
-void backpropogate_network_layer(
-    void *nativeLayerPtr,
-    void (*backpropogate_layer)(void *,struct activation,struct gradient)) {
+void backpropogate_network_layer(void *nativeLayerPtr) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
+  if (network_layer->backpropogate == NULL) return;
   for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    backpropogate_layer(
+    network_layer->backpropogate(
         network_layer->layer, network_layer->activations[i], network_layer->gradients[i]);
   }
+}
+
+void update_network_layer(void *nativeLayerPtr, double rate) {
+  struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
+  if (network_layer->update == NULL) return;
+  for (int i = 0; i < network_layer->miniBatchSize; i++) {
+    network_layer->update(
+        network_layer->layer, rate, network_layer->gradients[i]);
+  }
+
 }
 
 void destroy_network_layer(struct network_layer *l) {

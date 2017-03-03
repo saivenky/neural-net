@@ -23,7 +23,10 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_InputLayer_create
       layer,
       &param_layer,
       (create_activation_type)&create_activation_input_layer_wrapper,
-      (create_gradient_type)&create_gradient_input_layer_wrapper);
+      (create_gradient_type)&create_gradient_input_layer_wrapper,
+      NULL,
+      NULL,
+      NULL);
   copy_network_layer_buffers(env, obj, network_layer, size);
   jlong returnValue = (jlong) network_layer;
   return returnValue;

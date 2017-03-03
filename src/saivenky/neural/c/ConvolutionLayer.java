@@ -24,9 +24,6 @@ public class ConvolutionLayer extends Layer {
     private native long create(
             int[] inputShape, int[] kernelShape, int frames, int stride, int padding, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
-    private native void feedforward(long nativeLayerPtr);
-    private native void backpropogate(long nativeLayerPtr);
-    private native void update(long nativeLayerPtr, double rate);
 
     @Override
     public NeuronSet getNeurons() {

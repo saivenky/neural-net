@@ -25,30 +25,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_create
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ConvolutionLayer_destroy
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_ConvolutionLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_ConvolutionLayer
- * Method:    backpropogate
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_backpropogate
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_ConvolutionLayer
- * Method:    update
- * Signature: (JD)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ConvolutionLayer_update
-  (JNIEnv *, jobject, jlong, jdouble);
-
 #ifdef __cplusplus
 }
 #endif

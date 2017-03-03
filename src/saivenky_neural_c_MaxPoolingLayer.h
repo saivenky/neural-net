@@ -25,22 +25,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_create
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_destroy
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_MaxPoolingLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_MaxPoolingLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_MaxPoolingLayer
- * Method:    backpropogate
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_MaxPoolingLayer_backpropogate
-  (JNIEnv *, jobject, jlong);
-
 #ifdef __cplusplus
 }
 #endif

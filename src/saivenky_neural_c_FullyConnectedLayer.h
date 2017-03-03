@@ -25,30 +25,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_FullyConnectedLayer_create
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_FullyConnectedLayer_destroy
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_FullyConnectedLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_FullyConnectedLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_FullyConnectedLayer
- * Method:    backpropogate
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_FullyConnectedLayer_backpropogate
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_FullyConnectedLayer
- * Method:    update
- * Signature: (JD)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_FullyConnectedLayer_update
-  (JNIEnv *, jobject, jlong, jdouble);
-
 #ifdef __cplusplus
 }
 #endif

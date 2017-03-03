@@ -12,7 +12,10 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ReluLayer_create
       layer,
       previousLayer,
       (create_activation_type)&create_activation_relu_layer,
-      (create_gradient_type)&create_gradient_relu_layer);
+      (create_gradient_type)&create_gradient_relu_layer,
+      (feedforward_type)&feedforward_relu_layer,
+      (backpropogate_type)&backpropogate_relu_layer,
+      NULL);
   jlong returnValue = (jlong) network_layer;
   return returnValue;
 }
@@ -21,14 +24,4 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ReluLayer_destroy
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
   struct relu_layer *layer = (struct relu_layer *)nativeLayerPtr;
   destroy_relu_layer(layer);
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_feedforward
-(JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
-  feedforward_network_layer((void *)nativeLayerPtr, (feedforward_type)&feedforward_relu_layer);
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_backpropogate
-(JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
-  backpropogate_network_layer((void *)nativeLayerPtr, (backpropogate_type)&backpropogate_relu_layer);
 }

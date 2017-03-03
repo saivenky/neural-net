@@ -12,17 +12,14 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_create
       layer,
       previousLayer,
       (create_activation_type)&create_activation_softmax_cross_entropy_layer,
-      (create_gradient_type)&create_gradient_softmax_cross_entropy_layer);
+      (create_gradient_type)&create_gradient_softmax_cross_entropy_layer,
+      (feedforward_type)&feedforward_softmax_cross_entropy_layer,
+      NULL,
+      NULL);
   copy_network_layer_buffers(env, obj, network_layer, size);
 
   jlong returnValue = (jlong) network_layer;
   return returnValue;
-}
-
-JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_feedforward
-(JNIEnv *env, jobject object, jlong nativeLayerPtr) {
-  struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  feedforward_network_layer(l, (feedforward_type)&feedforward_softmax_cross_entropy_layer);
 }
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_setExpected

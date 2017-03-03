@@ -21,8 +21,6 @@ public class MaxPoolingLayer extends Layer {
     private native long create(
             int[] inputShape, int[] poolShape, int stride, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
-    private native void feedforward(long nativeLayerPtr);
-    private native void backpropogate(long nativeLayerPtr);
 
     @Override
     public NeuronSet getNeurons() {

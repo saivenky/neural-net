@@ -37,4 +37,8 @@ public abstract class Layer implements ILayer {
     protected ByteBuffer[] outputErrors;
     long nativeLayerPtr;
     protected int[] shape;
+
+    public static native void feedforward(long nativeLayerPtr);
+    public static native void backpropogate(long nativeLayerPtr);
+    public static native void update(long nativeLayerPtr, double rate);
 }

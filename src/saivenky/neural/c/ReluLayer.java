@@ -16,8 +16,6 @@ public class ReluLayer extends Layer {
 
     private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
-    private native void feedforward(long nativeLayerPtr);
-    private native void backpropogate(long nativeLayerPtr);
 
     @Override
     public NeuronSet getNeurons() {

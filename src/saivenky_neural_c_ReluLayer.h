@@ -25,22 +25,6 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ReluLayer_create
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_ReluLayer_destroy
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     saivenky_neural_c_ReluLayer
- * Method:    feedforward
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_feedforward
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     saivenky_neural_c_ReluLayer
- * Method:    backpropogate
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_saivenky_neural_c_ReluLayer_backpropogate
-  (JNIEnv *, jobject, jlong);
-
 #ifdef __cplusplus
 }
 #endif
