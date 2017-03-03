@@ -8,6 +8,9 @@ struct fully_connected_layer {
   int outputSize;
   double *weights;
   double *biases;
+};
+
+struct fully_connected_layer_gradient {
   double *weightErrors;
   double *biasErrors;
 };
@@ -21,5 +24,5 @@ void feedforward_fully_connected_layer(struct fully_connected_layer *l, struct a
 void backpropogate_fully_connected_layer(struct fully_connected_layer *l, struct activation a, struct gradient g);
 void backpropogate_to_input_fully_connected_layer(struct fully_connected_layer *l, struct gradient g);
 void backpropogate_to_props_fully_connected_layer(struct fully_connected_layer *l, struct activation a, struct gradient g);
-void update_fully_connected_layer(struct fully_connected_layer *l, double rate);
+void update_fully_connected_layer(struct fully_connected_layer *l, double rate, struct gradient);
 #endif

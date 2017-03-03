@@ -36,5 +36,7 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_FullyConnectedLayer_backpropogate
 JNIEXPORT void JNICALL Java_saivenky_neural_c_FullyConnectedLayer_update
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr, jdouble rate) {
   struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  update_fully_connected_layer(l->layer, rate);
+  for (int i = 0; i < l->miniBatchSize; i++) {
+    update_fully_connected_layer(l->layer, rate, l->gradients[i]);
+  }
 }

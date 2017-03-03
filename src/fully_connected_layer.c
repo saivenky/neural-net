@@ -14,8 +14,6 @@ struct fully_connected_layer *create_fully_connected_layer(int inputSize, int ou
   int weightsLen = inputSize * outputSize;
   l->weights = malloc(weightsLen * sizeof(double));
   l->biases = malloc(outputSize * sizeof(double));
-  l->weightErrors = calloc(weightsLen, sizeof(double));
-  l->biasErrors = calloc(outputSize, sizeof(double));
   init_rand_truncated_norm(l->weights, weightsLen, 0.1);
   init_const(l->biases, outputSize, 0.1);
   return l;
@@ -26,14 +24,17 @@ struct activation create_activation_fully_connected_layer(struct fully_connected
 }
 
 struct gradient create_gradient_fully_connected_layer(struct fully_connected_layer *l, double *inputError) {
-  return create_gradient(inputError, l->outputSize);
+  struct gradient g = create_gradient(inputError, l->outputSize);
+  struct fully_connected_layer_gradient *local = malloc(sizeof(struct fully_connected_layer_gradient));
+  local->weightErrors = calloc(l->inputSize * l->outputSize, sizeof(double));
+  local->biasErrors = calloc(l->outputSize, sizeof(double));
+  g.extra = local;
+  return g;
 }
 
 int destroy_fully_connected_layer(struct fully_connected_layer *l) {
   free(l->weights);
   free(l->biases);
-  free(l->weightErrors);
-  free(l->biasErrors);
   free(l);
   return 0;
 }
@@ -68,25 +69,27 @@ void backpropogate_to_input_fully_connected_layer(struct fully_connected_layer *
 }
 
 void backpropogate_to_props_fully_connected_layer(struct fully_connected_layer *l, struct activation a, struct gradient g) {
+  struct fully_connected_layer_gradient *local_g = (struct fully_connected_layer_gradient *)g.extra;
   for (int i = 0; i < l->outputSize; i++) {
     double error = g.outputError[i];
-    l->biasErrors[i] += error;
-    double *weightErrors = l->weightErrors + i * l->inputSize;
+    local_g->biasErrors[i] += error;
+    double *weightErrors = local_g->weightErrors + i * l->inputSize;
     for(int j = 0; j < l->inputSize; j++) {
       weightErrors[j] += error * a.inputActivation[j];
     }
   }
 }
 
-void update_fully_connected_layer(struct fully_connected_layer *l, double rate) {
+void update_fully_connected_layer(struct fully_connected_layer *l, double rate, struct gradient g) {
+  struct fully_connected_layer_gradient *local_g = (struct fully_connected_layer_gradient *)g.extra;
   for (int i = 0; i < l->outputSize; i++) {
-    l->biases[i] -= rate * l->biasErrors[i];
+    l->biases[i] -= rate * local_g->biasErrors[i];
   }
 
   int weightsLen = l->inputSize * l->outputSize;
   for (int i = 0; i < weightsLen; i++) {
-    l->weights[i] -= rate * l->weightErrors[i];
+    l->weights[i] -= rate * local_g->weightErrors[i];
   }
-  memset(l->biasErrors, 0, l->outputSize * sizeof(double));
-  memset(l->weightErrors, 0, weightsLen * sizeof(double));
+  memset(local_g->biasErrors, 0, l->outputSize * sizeof(double));
+  memset(local_g->weightErrors, 0, weightsLen * sizeof(double));
 }
