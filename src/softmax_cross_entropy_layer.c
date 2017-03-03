@@ -12,11 +12,13 @@ struct softmax_cross_entropy_layer *create_softmax_cross_entropy_layer(int size)
   return l;
 }
 
-struct activation create_activation_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, double *inputActivation) {
+struct activation create_activation_softmax_cross_entropy_layer(
+    struct softmax_cross_entropy_layer *l, double *inputActivation) {
   return create_activation(inputActivation, l->size);
 }
 
-struct gradient create_gradient_softmax_cross_entropy_layer(double *inputError) {
+struct gradient create_gradient_softmax_cross_entropy_layer(
+    struct softmax_cross_entropy_layer *l, double *inputError) {
   return create_gradient_passthru(inputError);
 }
 

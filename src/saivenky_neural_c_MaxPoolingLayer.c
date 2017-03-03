@@ -11,13 +11,12 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_create
   GetIntArray(env, &jinputShape);
   GetIntArray(env, &jpoolShape);
   struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
-  double *inputActivation = previousLayer->activation.outputSignal;
-  double *inputError = previousLayer->gradient.outputError;
   struct max_pooling_layer *layer = create_max_pooling_layer(jinputShape.array, jpoolShape.array, stride);
-  struct network_layer *network_layer = create_network_layer(layer);
-  network_layer->activation = create_activation_max_pooling_layer(network_layer->layer, inputActivation);
-  network_layer->gradient = create_gradient_max_pooling_layer(network_layer->layer, inputError);
-  copy_network_layer_buffers(env, obj, network_layer, layer->outputShape.dim2);
+  struct network_layer *network_layer = create_network_layer(
+      layer,
+      previousLayer,
+      (create_activation_type)&create_activation_max_pooling_layer,
+      (create_gradient_type)&create_gradient_max_pooling_layer);
 
   ReleaseIntArray(env, &jinputShape, JNI_ABORT);
   ReleaseIntArray(env, &jpoolShape, JNI_ABORT);
@@ -33,12 +32,10 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_MaxPoolingLayer_destroy
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_MaxPoolingLayer_feedforward
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
-  struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  feedforward_max_pooling_layer(l->layer, l->activation);
+  feedforward_network_layer((void *)nativeLayerPtr, (feedforward_type)&feedforward_max_pooling_layer);
 }
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_MaxPoolingLayer_backpropogate
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
-  struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  backpropogate_max_pooling_layer(l->layer, l->activation, l->gradient);
+  backpropogate_network_layer((void *)nativeLayerPtr, (backpropogate_type)&backpropogate_max_pooling_layer);
 }

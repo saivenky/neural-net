@@ -13,11 +13,8 @@ public class FullyConnectedLayer extends Layer {
                 1,
                 1
         };
-        inputActivation = previousLayer.outputSignal;
-        inputError = previousLayer.outputError;
 
         nativeLayerPtr = create(inputSize, outputSize, previousLayer.nativeLayerPtr);
-        System.out.printf("fc native ptr: 0x%x\n", nativeLayerPtr);
         adjustByteOrderOnBuffers();
     }
 

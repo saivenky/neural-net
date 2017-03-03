@@ -12,10 +12,10 @@ extern "C" {
 /*
  * Class:     saivenky_neural_c_InputLayer
  * Method:    create
- * Signature: (I)J
+ * Signature: (II)J
  */
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_InputLayer_create
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     saivenky_neural_c_InputLayer

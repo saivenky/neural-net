@@ -7,11 +7,12 @@
 #include "gradient.h"
 #include "convolution_layer.h"
 
-struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, int padding) {
+struct convolution_layer *create_convolution_layer(
+    int *inputShape, int *kernelShape, int frames, int stride, int padding) {
   struct convolution_layer *l = malloc(sizeof(struct convolution_layer));
+  l->padding = padding;
   l->inputShape = create_shape(inputShape);
   l->kernelShape = create_shape(kernelShape);
-  l->padding = padding;
   l->outputShape = calcoutsize(l->inputShape, l->kernelShape, l->padding, stride, frames);
 
   l->props = malloc(sizeof(struct properties *) * frames);
@@ -22,11 +23,15 @@ struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelS
   return l;
 }
 
-struct activation create_activation_convolution_layer(struct convolution_layer *l, double *inputActivation) {
+struct activation create_activation_convolution_layer(
+    struct convolution_layer *l,
+    double *inputActivation) {
   return create_activation(inputActivation, l->outputShape.dim2);
 }
 
-struct gradient create_gradient_convolution_layer(struct convolution_layer *l, double *inputError) {
+struct gradient create_gradient_convolution_layer(
+    struct convolution_layer *l,
+    double *inputError) {
   return create_gradient(inputError, l->outputShape.dim2);
 }
 

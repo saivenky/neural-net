@@ -20,7 +20,7 @@ public class NeuralNetwork {
     private IInputLayer inputLayer;
     private IOutputLayer outputLayer;
     private CostFunction costFunction;
-    public double[] predicted;
+    public double[][] predicted;
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer) {
@@ -29,7 +29,7 @@ public class NeuralNetwork {
 
     public NeuralNetwork(
             int[] layerSizes, ActivationFunction activationFunction, CostFunction costFunction, NeuronInitializer neuronInitializer, double[] dropoutRate) {
-        this(new InputLayer(layerSizes[0]), costFunction, new Layer[layerSizes.length - 1]);
+        this(new InputLayer(layerSizes[0]), costFunction, 1, new Layer[layerSizes.length - 1]);
         ILayer previousLayer = inputLayer;
         for (int i = 1; i < layerSizes.length; i++) {
             layers[i - 1] = new StandardLayer(
@@ -41,10 +41,10 @@ public class NeuralNetwork {
             throw new RuntimeException("no output layer");
         }
         outputLayer = (IOutputLayer) layers[layers.length - 1];
-        predicted = new double[outputLayer.getNeurons().size()];
+        predicted = new double[1][outputLayer.getNeurons().size()];
     }
 
-    public NeuralNetwork(IInputLayer inputLayer, CostFunction costFunction, ILayer ... layers) {
+    public NeuralNetwork(IInputLayer inputLayer, CostFunction costFunction, int miniBatchSize, ILayer ... layers) {
         this.inputLayer = inputLayer;
         this.costFunction = costFunction;
         this.layers = layers;
@@ -53,10 +53,10 @@ public class NeuralNetwork {
         }
         outputLayer = (IOutputLayer)layers[layers.length - 1];
         trainedExamples = 0;
-        if (outputLayer != null) predicted = new double[outputLayer.size()];
+        if (outputLayer != null) predicted = new double[miniBatchSize][outputLayer.size()];
     }
 
-    public void run(double[] input) {
+    public void run(double[][] input) {
         inputLayer.setInput(input);
         for (int i = 0; i < layers.length; i++) {
             layers[i].run();
@@ -65,7 +65,7 @@ public class NeuralNetwork {
         outputLayer.getPredicted(predicted);
     }
 
-    private void feedforward(double[] input) {
+    private void feedforward(double[][] input) {
         inputLayer.setInput(input);
         for (int i = 0; i < layers.length; i++) {
             layers[i].feedforward();
@@ -74,9 +74,13 @@ public class NeuralNetwork {
         outputLayer.getPredicted(predicted);
     }
 
-    private void backpropagate(double[] output) {
+    private void backpropagate(double[][] output) {
         outputLayer.setExpected(output);
-        double[] cost = costFunction.f1(predicted, output);
+        double[][] cost = new double[output.length][];
+        for(int i = 0; i < output.length; i++) {
+            cost[i] = costFunction.f1(predicted[i], output[i]);
+        }
+
         outputLayer.setSignalCostGradient(cost);
 
         for (int i = layers.length - 1; i >= 0; i--) {
@@ -92,7 +96,7 @@ public class NeuralNetwork {
         trainedExamples = 0;
     }
 
-    void train(double[] input, double[] output) {
+    void train(double[][] input, double[][] output) {
         feedforward(input);
         backpropagate(output);
         trainedExamples += 1;
@@ -104,80 +108,5 @@ public class NeuralNetwork {
                 ((IDropoutLayer)l).reselectDropout();
             }
         }
-    }
-
-    private double cost(double[] input, double[] output, CostFunction costFunction) {
-        run(input);
-        return costFunction.f(predicted, output);
-    }
-
-    public static void main(String[] args) {
-        int[] layers = {2, 8, 2, 1};
-        NeuronInitializer neuronInitializer = new NeuronInitializer(
-                new NeuronInitializer.Function() {
-                    @Override
-                    public double f() {
-                        return 0.1;
-                    }
-                },
-                new NeuronInitializer.Function() {
-                    @Override
-                    public double f() {
-                        return Math.random() - 0.5;
-                    }
-        });
-
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), neuronInitializer);
-
-        Data.Function function = new Data.Function() {
-            @Override
-            double f(double x) {
-                return 9. / (3. + x);
-            }
-        };
-
-        Data.Example[] trainData = Data.generateFunction(function, 250);
-        Data.Example[] testData = Data.generateFunction(function, 250);
-
-        NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(trainData);
-        trainer.setNeuralNetwork(nn);
-        trainer.setBatchSize(1);
-        trainer.setLearningRate(0.3);
-        trainer.setEpochs(50);
-
-        trainer.train(NullEvaluator, NullEvaluator);
-
-        //should be greater than 0.8
-        System.out.println("\ntest data correct: " + check1d(nn, testData));
-        System.out.println("testLoss: " + totalLoss(nn, testData));
-        System.out.println("trainLoss: " + totalLoss(nn, trainData));
-    }
-
-    private static double check1d(NeuralNetwork nn, Data.Example[] data) {
-        double correct = 0;
-        for (Data.Example e : data) {
-            nn.run(e.input);
-            if (nn.predicted.length != 1 && e.output.length != 1) {
-                throw new RuntimeException("Not 1-d data");
-            }
-            double predicted = nn.predicted[0] > 0.5 ? 1 : 0;
-            double actual = e.output[0];
-            if (same(predicted, actual)) correct += 1;
-        }
-
-        return correct / data.length;
-    }
-
-    private static double totalLoss(NeuralNetwork nn, Data.Example[] data) {
-        double totalLoss = 0;
-        for (Data.Example e : data) {
-            totalLoss += nn.cost(e.input, e.output, Square.getInstance());
-        }
-
-        return totalLoss / data.length;
-    }
-
-    private static boolean same(double a, double b) {
-        return Math.abs(a - b) < 1e-5;
     }
 }

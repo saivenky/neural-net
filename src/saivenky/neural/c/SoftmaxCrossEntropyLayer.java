@@ -3,24 +3,27 @@ package saivenky.neural.c;
 import saivenky.neural.IOutputLayer;
 import saivenky.neural.NeuronSet;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by saivenky on 2/25/17.
  */
 public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
     private final int size;
 
-    public SoftmaxCrossEntropyLayer(Layer previousLayer) {
+    public SoftmaxCrossEntropyLayer(Layer previousLayer, int miniBatchSize) {
         shape = previousLayer.shape;
         size = previousLayer.shape[0] * previousLayer.shape[1] * previousLayer.shape[2];
+        outputSignals = new ByteBuffer[miniBatchSize];
+        outputErrors = new ByteBuffer[miniBatchSize];
         nativeLayerPtr = create(size, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
-        outputError = inputError;
     }
 
     private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
     private native void feedforward(long nativeLayerPtr);
-    private native void setExpected(long nativeLayerPtr, double[] expected);
+    private native void setExpected(long nativeLayerPtr, double[][] expected);
 
     @Override
     public NeuronSet getNeurons() {
@@ -46,17 +49,19 @@ public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
     }
 
     @Override
-    public void setSignalCostGradient(double[] cost) {
+    public void setSignalCostGradient(double[][] cost) {
     }
 
-    public void setExpected(double[] expected) {
+    public void setExpected(double[][] expected) {
         setExpected(nativeLayerPtr, expected);
     }
 
     @Override
-    public void getPredicted(double[] predicted) {
-        for(int i = 0, bbIndex = 0; i < size; i++, bbIndex += SIZEOF_DOUBLE) {
-            predicted[i] = outputSignal.getDouble(bbIndex);
+    public void getPredicted(double[][] predicted) {
+        for(int b = 0; b < predicted.length; b++) {
+            for(int i = 0, bbIndex = 0; i < size; i++, bbIndex += SIZEOF_DOUBLE) {
+                predicted[b][i] = outputSignals[b].getDouble(bbIndex);
+            }
         }
     }
 

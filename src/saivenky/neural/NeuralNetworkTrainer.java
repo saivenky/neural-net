@@ -6,7 +6,7 @@ package saivenky.neural;
 public class NeuralNetworkTrainer {
     private NeuralNetwork neuralNetwork;
     private Data.Example[] trainData;
-    private int batchSize;
+    public int batchSize;
     private double learningRate;
     private int epochs;
 
@@ -49,10 +49,14 @@ public class NeuralNetworkTrainer {
         int batchEnd = batchSize - 1;
         int currentBatch = 0;
         long batchStartTime = System.currentTimeMillis();
+        double[][] input = new double[batchSize][];
+        double[][] output = new double[batchSize][];
         for(int j = 0; j < trainData.length; j++) {
             Data.Example e = trainData[j];
-            neuralNetwork.train(e.input, e.output);
+            input[j % batchSize] = e.input;
+            output[j % batchSize] = e.output;
             if (j == batchEnd) {
+                neuralNetwork.train(input, output);
                 neuralNetwork.update(learningRate);
                 neuralNetwork.reselectDropouts();
                 batchEnd += batchSize;

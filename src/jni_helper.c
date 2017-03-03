@@ -3,11 +3,13 @@
 #include "jni_helper.h"
 #include "network_layer.h"
 
-void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, void *address, long len) {
+void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, int index, void *address, long len) {
   jclass clazz = (*env)->GetObjectClass(env, obj);
-  jfieldID fieldId = (*env)->GetFieldID(env, clazz, fieldName, "Ljava/nio/ByteBuffer;");
+  jfieldID fieldId = (*env)->GetFieldID(env, clazz, fieldName, "[Ljava/nio/ByteBuffer;");
+  jobjectArray objArray = (*env)->GetObjectField(env, obj, fieldId);
+  if (objArray == NULL) return;
   jobject byteBuffer = (*env)->NewDirectByteBuffer(env, address, len);
-  (*env)->SetObjectField(env, obj, fieldId, byteBuffer);
+  (*env)->SetObjectArrayElement(env, objArray, index, byteBuffer);
 }
 void GetIntArray(JNIEnv *env, struct JIntArray *array) {
   array->array = (*env)->GetIntArrayElements(env, array->jarray, &(array->isCopy));
@@ -30,6 +32,8 @@ void ReleaseDoubleArray(JNIEnv *env, struct JDoubleArray *array, jint mode) {
 }
 
 void copy_network_layer_buffers(JNIEnv *env, jobject obj, struct network_layer *network_layer, int size) {
-  SetByteBuffer(env, obj, "outputSignal", network_layer->activation.outputSignal, size * sizeof(double));
-  SetByteBuffer(env, obj, "outputError", network_layer->gradient.outputError, size * sizeof(double));
+  for (int i = 0; i < network_layer->miniBatchSize; i++) {
+    SetByteBuffer(env, obj, "outputSignals", i, network_layer->activations[i].outputSignal, size * sizeof(double));
+    SetByteBuffer(env, obj, "outputErrors", i, network_layer->gradients[i].outputError, size * sizeof(double));
+  }
 }

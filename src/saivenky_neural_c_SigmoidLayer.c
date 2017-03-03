@@ -7,13 +7,12 @@
 JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SigmoidLayer_create
 (JNIEnv * env, jobject obj, jint size, jlong previousLayerNativePtr) {
   struct network_layer *previousLayer = (struct network_layer *) previousLayerNativePtr;
-  double *inputActivation = previousLayer->activation.outputSignal;
-  double *inputError = previousLayer->gradient.outputError;
   struct sigmoid_layer *layer = create_sigmoid_layer(size);
-  struct network_layer *network_layer = create_network_layer(layer);
-  network_layer->activation = create_activation_sigmoid_layer(layer, inputActivation);
-  network_layer->gradient = create_gradient_sigmoid_layer(layer, inputError);
-  copy_network_layer_buffers(env, obj, network_layer, layer->size);
+  struct network_layer *network_layer = create_network_layer(
+      layer,
+      previousLayer,
+      (create_activation_type)&create_activation_sigmoid_layer,
+      (create_gradient_type)&create_gradient_sigmoid_layer);
   jlong returnValue = (jlong) network_layer;
   return returnValue;
 }
@@ -27,11 +26,11 @@ JNIEXPORT jlong JNICALL Java_saivenky_neural_c_SigmoidLayer_destroy
 JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_feedforward
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
   struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  feedforward_sigmoid_layer(l->layer, l->activation);
+  feedforward_network_layer(l, (feedforward_type)&feedforward_sigmoid_layer);
 }
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_SigmoidLayer_backpropogate
 (JNIEnv *env, jobject obj, jlong nativeLayerPtr) {
   struct network_layer *l = (struct network_layer *)nativeLayerPtr;
-  backpropogate_sigmoid_layer(l->layer, l->activation, l->gradient);
+  backpropogate_network_layer(l, (backpropogate_type)&backpropogate_sigmoid_layer);
 }

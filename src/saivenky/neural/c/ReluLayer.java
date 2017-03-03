@@ -7,8 +7,6 @@ import saivenky.neural.NeuronSet;
  */
 public class ReluLayer extends Layer {
     public ReluLayer(Layer previousLayer) {
-        inputActivation = previousLayer.outputSignal;
-        inputError = previousLayer.outputError;
         shape = previousLayer.shape;
         int size = previousLayer.shape[0] * previousLayer.shape[1] * previousLayer.shape[2];
 

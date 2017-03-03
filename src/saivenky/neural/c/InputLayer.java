@@ -3,17 +3,20 @@ package saivenky.neural.c;
 import saivenky.neural.IInputLayer;
 import saivenky.neural.NeuronSet;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by saivenky on 2/20/17.
  */
 public class InputLayer extends Layer implements IInputLayer {
-    public InputLayer(int size) {
+    public InputLayer(int size, int miniBatchSize) {
         shape = new int[] {size, 1, 1};
-        nativeLayerPtr = create(size);
+        outputSignals = new ByteBuffer[miniBatchSize];
+        nativeLayerPtr = create(size, miniBatchSize);
         adjustByteOrderOnBuffers();
     }
 
-    private native long create(int size);
+    private native long create(int size, int miniBatchSize);
     private native long destroy(long nativeLayerPtr);
 
     @Override
@@ -21,9 +24,11 @@ public class InputLayer extends Layer implements IInputLayer {
         return null;
     }
 
-    public void setInput(double[] input) {
-        for(int i = 0, bbIndex = 0; i < input.length; i++, bbIndex += SIZEOF_DOUBLE) {
-            outputSignal.putDouble(bbIndex, input[i]);
+    public void setInput(double[][] input) {
+        for(int b = 0; b < input.length; b++) {
+            for (int i = 0, bbIndex = 0; i < input[b].length; i++, bbIndex += SIZEOF_DOUBLE) {
+                outputSignals[b].putDouble(bbIndex, input[b][i]);
+            }
         }
     }
 

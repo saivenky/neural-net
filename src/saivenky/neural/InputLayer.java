@@ -22,9 +22,9 @@ public class InputLayer implements IInputLayer {
         }
     }
 
-    public void setInput(double[] input) {
+    public void setInput(double[][] input) {
         for(int i = 0; i < neurons.size(); i++) {
-            ((InputNeuron)neurons.get(i)).setActivation(input[i]);
+            ((InputNeuron)neurons.get(i)).setActivation(input[0][i]);
         }
     }
 

@@ -30,18 +30,20 @@ public abstract class Layer implements ILayer, IOutputLayer {
         neurons.gradientDescent(rate);
     }
 
-    public void setExpected(double[] expected) {
+    public void setExpected(double[][] expected) {
     }
 
-    public void setSignalCostGradient(double[] cost) {
-        for (int i = 0; i < neurons.size(); i++) {
-            neurons.get(i).setSignalCostGradient(cost[i]);
+    public void setSignalCostGradient(double[][] cost) {
+        for (int b = 0; b < cost.length; b++) {
+            for (int i = 0; i < neurons.size(); i++) {
+                neurons.get(i).setSignalCostGradient(cost[b][i]);
+            }
         }
     }
 
-    public void getPredicted(double[] predicted) {
+    public void getPredicted(double[][] predicted) {
         for (int i = 0; i < predicted.length; i++) {
-            predicted[i] = neurons.get(i).getActivation();
+            predicted[0][i] = neurons.get(i).getActivation();
         }
     }
 

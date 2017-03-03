@@ -9,7 +9,7 @@ struct softmax_cross_entropy_layer {
 
 struct softmax_cross_entropy_layer *create_softmax_cross_entropy_layer(int size);
 struct activation create_activation_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *, double *inputActivation);
-struct gradient create_gradient_softmax_cross_entropy_layer(double *inputError);
+struct gradient create_gradient_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *, double *inputError);
 
 void destroy_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l);
 void feedforward_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct activation);

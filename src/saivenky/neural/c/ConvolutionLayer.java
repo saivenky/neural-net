@@ -16,9 +16,6 @@ public class ConvolutionLayer extends Layer {
             frames
         };
 
-        inputActivation = previousLayer.outputSignal;
-        inputError = previousLayer.outputError;
-
         nativeLayerPtr = create(
                 previousLayer.shape, kernelShape, frames, 1, padding, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();

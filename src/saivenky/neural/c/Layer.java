@@ -20,16 +20,21 @@ public abstract class Layer implements ILayer {
     }
 
     void adjustByteOrderOnBuffers() {
-        if (inputActivation != null) inputActivation.order(NATIVE_ORDER);
-        if (inputError != null) inputError.order(NATIVE_ORDER);
-        if (outputSignal != null) outputSignal.order(NATIVE_ORDER);
-        if (outputError != null) outputError.order(NATIVE_ORDER);
+        if (outputSignals != null) {
+            for (ByteBuffer outputSignal : outputSignals) {
+                outputSignal.order(NATIVE_ORDER);
+            }
+        }
+
+        if (outputErrors != null) {
+            for (ByteBuffer outputError : outputErrors) {
+                outputError.order(NATIVE_ORDER);
+            }
+        }
     }
 
-    protected ByteBuffer inputActivation;
-    protected ByteBuffer inputError;
-    protected ByteBuffer outputSignal;
-    protected ByteBuffer outputError;
+    protected ByteBuffer[] outputSignals;
+    protected ByteBuffer[] outputErrors;
     long nativeLayerPtr;
     protected int[] shape;
 }

@@ -36,10 +36,10 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_feedforwa
 /*
  * Class:     saivenky_neural_c_SoftmaxCrossEntropyLayer
  * Method:    setExpected
- * Signature: (J[D)V
+ * Signature: (J[[D)V
  */
 JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_setExpected
-  (JNIEnv *, jobject, jlong, jdoubleArray);
+  (JNIEnv *, jobject, jlong, jobjectArray);
 
 #ifdef __cplusplus
 }

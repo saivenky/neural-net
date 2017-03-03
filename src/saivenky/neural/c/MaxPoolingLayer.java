@@ -13,8 +13,6 @@ public class MaxPoolingLayer extends Layer {
                 FilterDimensionCalculator.calculateOutputSize(previousLayer.shape[1], poolShape[1], stride, 0),
                 previousLayer.shape[2]
         };
-        inputActivation = previousLayer.outputSignal;
-        inputError = previousLayer.outputError;
 
         nativeLayerPtr = create(previousLayer.shape, poolShape, stride, previousLayer.nativeLayerPtr);
         adjustByteOrderOnBuffers();
