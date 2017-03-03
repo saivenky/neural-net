@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <float.h>
-#include "neuron_props.h"
 #include "kernel_dim.h"
 #include "activation.h"
 #include "gradient.h"

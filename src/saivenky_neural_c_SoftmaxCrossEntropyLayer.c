@@ -1,5 +1,4 @@
 #include <jni.h>
-#include "neuron_props.h"
 #include "network_layer.h"
 #include "softmax_cross_entropy_layer.h"
 #include "saivenky_neural_c_SoftmaxCrossEntropyLayer.h"

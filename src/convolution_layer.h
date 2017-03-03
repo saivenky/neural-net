@@ -1,7 +1,6 @@
 #ifndef CONVOLUTION_LAYER_H
 #define CONVOLUTION_LAYER_H
 #include "kernel_dim.h"
-#include "neuron_props.h"
 #include "activation.h"
 #include "gradient.h"
 
@@ -10,7 +9,13 @@ struct convolution_layer {
   struct shape outputShape;
   struct shape kernelShape;
   int padding;
-  struct properties **props;
+  double *weights;
+  double *biases;
+};
+
+struct convolution_layer_gradient {
+  double *weightErrors;
+  double *biasErrors;
 };
 
 struct convolution_layer *create_convolution_layer(int *inputShape, int *kernelShape, int frames, int stride, int padding);

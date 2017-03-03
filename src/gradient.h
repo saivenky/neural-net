@@ -3,6 +3,7 @@
 struct gradient {
   double *inputError;
   double *outputError;
+  void *extra;
 };
 
 struct gradient create_gradient_passthru(double *inputError);

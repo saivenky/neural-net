@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "fully_connected_layer.h"
-#include "neuron_props.h"
 #include "rand.h"
 #include "activation.h"
 #include "gradient.h"

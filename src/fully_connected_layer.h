@@ -1,6 +1,5 @@
 #ifndef FULLY_CONNECTED_LAYER_H
 #define FULLY_CONNECTED_LAYER_H
-#include "neuron_props.h"
 #include "activation.h"
 #include "gradient.h"
 
