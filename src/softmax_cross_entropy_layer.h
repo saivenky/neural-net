@@ -13,5 +13,7 @@ struct gradient create_gradient_softmax_cross_entropy_layer(struct softmax_cross
 
 void destroy_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l);
 void feedforward_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct activation);
-void set_expected_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct activation, struct gradient, double *expected);
+void backpropogate_softmax_cross_entropy_layer(
+    struct softmax_cross_entropy_layer *l, struct activation a, struct gradient g);
+void set_expected_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct gradient g, double *expected);
 #endif

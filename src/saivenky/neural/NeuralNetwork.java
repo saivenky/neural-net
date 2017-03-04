@@ -12,8 +12,8 @@ import static saivenky.neural.NeuralNetworkTrainer.NullEvaluator;
 /**
  * Created by saivenky on 1/26/17.
  */
-public class NeuralNetwork {
-    ILayer[] layers;
+public class NeuralNetwork implements INeuralNetwork {
+    private ILayer[] layers;
 
     private int trainedExamples;
 
@@ -56,6 +56,11 @@ public class NeuralNetwork {
         if (outputLayer != null) predicted = new double[miniBatchSize][outputLayer.size()];
     }
 
+    @Override
+    public double[][] getPredicted() {
+        return predicted;
+    }
+
     public void run(double[][] input) {
         inputLayer.setInput(input);
         for (int i = 0; i < layers.length; i++) {
@@ -88,7 +93,7 @@ public class NeuralNetwork {
         }
     }
 
-    void update(double learningRate) {
+    public void update(double learningRate) {
         for (ILayer layer : layers) {
             layer.gradientDescent(learningRate / trainedExamples);
         }
@@ -96,7 +101,7 @@ public class NeuralNetwork {
         trainedExamples = 0;
     }
 
-    void train(double[][] input, double[][] output) {
+    public void train(double[][] input, double[][] output) {
         feedforward(input);
         backpropagate(output);
         trainedExamples += 1;

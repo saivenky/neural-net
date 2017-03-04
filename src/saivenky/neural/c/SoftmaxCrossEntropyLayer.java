@@ -41,6 +41,7 @@ public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
 
     @Override
     public void backpropagate(boolean backpropagateToPreviousLayer) {
+        backpropogate(nativeLayerPtr);
     }
 
     @Override

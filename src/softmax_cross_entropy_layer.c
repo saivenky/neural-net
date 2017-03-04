@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <float.h>
 #include <math.h>
 #include "activation.h"
@@ -19,7 +20,9 @@ struct activation create_activation_softmax_cross_entropy_layer(
 
 struct gradient create_gradient_softmax_cross_entropy_layer(
     struct softmax_cross_entropy_layer *l, double *inputError) {
-  return create_gradient_passthru(inputError);
+  struct gradient g = create_gradient_passthru(inputError);
+  g.extra = (double *)malloc(l->size * sizeof(double));
+  return g;
 }
 
 void destroy_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l) {
@@ -50,8 +53,14 @@ void feedforward_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer 
   }
 }
 
-void set_expected_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct activation a, struct gradient g, double *expected) {
+void backpropogate_softmax_cross_entropy_layer(
+    struct softmax_cross_entropy_layer *l, struct activation a, struct gradient g) {
+  double *expected = (double *)g.extra;
   for (int i = 0; i < l->size; i++) {
     g.inputError[i] =  a.outputSignal[i] - expected[i];
   }
+}
+
+void set_expected_softmax_cross_entropy_layer(struct softmax_cross_entropy_layer *l, struct gradient g, double *expected) {
+  memcpy(g.extra, expected, l->size * sizeof(double));
 }
