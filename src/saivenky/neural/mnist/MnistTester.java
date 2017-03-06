@@ -227,7 +227,7 @@ public class MnistTester {
                     int labelI = labelIndex[t];
                     int predictedLabel = argmax(predicted);
                     int expectedLabel = labels[labelI];
-                    String filename = String.format("%7d-a%de%d.png", i, predictedLabel, expectedLabel);
+                    String filename = String.format("%7d-a%de%d.png", labelI, predictedLabel, expectedLabel);
                     File image;
                     if (predictedLabel == expectedLabel) {
                         correct += 1;
@@ -237,7 +237,7 @@ public class MnistTester {
                         image = new File(incorrectDirectory, filename);
                     }
 
-                    ImageWriter.write(image, IMAGE_WIDTH, IMAGE_HEIGHT, e.input);
+                    ImageWriter.write(image, IMAGE_WIDTH, IMAGE_HEIGHT, input[t]);
                 }
                 batchEnd += batchSize;
             }

@@ -29,8 +29,8 @@ struct network_layer *create_network_layer(
     feedforward_type,
     backpropogate_type,
     update_type);
-void feedforward_network_layer(void *nativeLayerPtr);
-void backpropogate_network_layer(void *nativeLayerPtr);
-void update_network_layer(void *nativeLayerPtr, double rate);
+void feedforward_network_layer(void *nativeLayerPtr, int batchIndex);
+void backpropogate_network_layer(void *nativeLayerPtr, int batchIndex);
+void update_network_layer(void *nativeLayerPtr, double rate, int batchIndex);
 void destroy_network_layer(struct network_layer *l);
 #endif

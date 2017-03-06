@@ -51,7 +51,7 @@ void feedforward_max_pooling_layer(struct max_pooling_layer *l, struct activatio
           }
         }
 
-        if (argMaxIndex < 0 || argMaxIndex >= 11520) {
+        if (argMaxIndex < 0) {
           printf("ERROR: max_pooling_layer - argmax is %d\n", argMaxIndex);
           exit(-1);
         }

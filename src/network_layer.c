@@ -33,31 +33,27 @@ struct network_layer *create_network_layer(
   return l;
 }
 
-void feedforward_network_layer(void *nativeLayerPtr) {
+void feedforward_network_layer(void *nativeLayerPtr, int batchIndex) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
   if (network_layer->feedforward == NULL) return;
-  for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    network_layer->feedforward(
-        network_layer->layer, network_layer->activations[i]);
-  }
+  network_layer->feedforward(
+      network_layer->layer, network_layer->activations[batchIndex]);
 }
 
-void backpropogate_network_layer(void *nativeLayerPtr) {
+void backpropogate_network_layer(void *nativeLayerPtr, int batchIndex) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
   if (network_layer->backpropogate == NULL) return;
-  for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    network_layer->backpropogate(
-        network_layer->layer, network_layer->activations[i], network_layer->gradients[i]);
-  }
+  network_layer->backpropogate(
+      network_layer->layer,
+      network_layer->activations[batchIndex],
+      network_layer->gradients[batchIndex]);
 }
 
-void update_network_layer(void *nativeLayerPtr, double rate) {
+void update_network_layer(void *nativeLayerPtr, double rate, int batchIndex) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
   if (network_layer->update == NULL) return;
-  for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    network_layer->update(
-        network_layer->layer, rate, network_layer->gradients[i]);
-  }
+  network_layer->update(
+      network_layer->layer, rate, network_layer->gradients[batchIndex]);
 
 }
 
