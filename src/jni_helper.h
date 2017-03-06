@@ -1,23 +1,24 @@
 #ifndef JNI_HELPER_H
 #define JNI_HELPER_H
+#include <jni.h>
 #include "network_layer.h"
 
-struct JIntArray {
-  jintArray jarray;
-  jint *array;
+struct JArray {
+  jarray jarray;
+  void *array;
   jboolean isCopy;
-};
-
-struct JDoubleArray {
-  jdoubleArray jarray;
-  jdouble *array;
-  jboolean isCopy;
+  JNIEnv *env;
+  void * (*get)(JNIEnv *, jarray, jboolean *);
+  void (*release)(JNIEnv *, jarray, void *, jint);
 };
 
 void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, int index, void *address, long len);
-void GetIntArray(JNIEnv *env, struct JIntArray *array);
-void ReleaseIntArray(JNIEnv *env, struct JIntArray *array, jint mode);
-void GetDoubleArray(JNIEnv *env, struct JDoubleArray *array);
-void ReleaseDoubleArray(JNIEnv *env, struct JDoubleArray *array, jint mode);
+struct JArray GetArray(JNIEnv *env, jarray,
+  void * (*get)(JNIEnv *, jarray, jboolean *),
+  void (*release)(JNIEnv *, jarray, void *, jint));
+struct JArray GetIntArray(JNIEnv *env, jarray);
+struct JArray GetDoubleArray(JNIEnv *env, jarray);
+struct JArray GetLongArray(JNIEnv *env, jarray);
+void ReleaseArray(struct JArray *array, jint mode);
 void copy_network_layer_buffers(JNIEnv *env, jobject obj, struct network_layer *network_layer, int size);
 #endif

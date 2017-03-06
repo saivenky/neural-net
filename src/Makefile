@@ -17,7 +17,9 @@ kernel_dim.o: kernel_dim.c
 	${CC} ${FLAGS} -c kernel_dim.c
 sigmoid_layer.o: sigmoid_layer.c
 	${CC} ${FLAGS} -c sigmoid_layer.c -lm
+neural_network.o: neural_network.c
+	${CC} ${FLAGS} -c neural_network.c
 %_layer.o: %_layer.c
 	${CC} ${FLAGS} -c $<
-libneural.so: saivenky_neural_c_*.c $(patsubst %.c,%.o,$(wildcard *_layer.c)) jni_helper.o rand.o kernel_dim.o activation.o gradient.o
+libneural.so: saivenky_neural_c_*.c $(patsubst %.c,%.o,$(wildcard *_layer.c)) jni_helper.o rand.o kernel_dim.o activation.o gradient.o neural_network.o
 	${CC} ${JNI} ${FLAGS} -o libneural.so -shared -Wl,-soname,neural.so $^

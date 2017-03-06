@@ -4,7 +4,7 @@ package saivenky.neural;
  * Created by saivenky on 1/28/17.
  */
 public class NeuralNetworkTrainer {
-    private NeuralNetwork neuralNetwork;
+    private INeuralNetwork neuralNetwork;
     private Data.Example[] trainData;
     public int batchSize;
     private double learningRate;
@@ -30,7 +30,7 @@ public class NeuralNetworkTrainer {
         this.epochs = epochs;
     }
 
-    public void setNeuralNetwork(NeuralNetwork neuralNetwork) {
+    public void setNeuralNetwork(INeuralNetwork neuralNetwork) {
         this.neuralNetwork = neuralNetwork;
     }
 

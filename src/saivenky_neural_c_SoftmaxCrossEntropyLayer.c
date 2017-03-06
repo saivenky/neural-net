@@ -26,10 +26,9 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_SoftmaxCrossEntropyLayer_setExpect
 (JNIEnv *env, jobject object, jlong nativeLayerPtr, jobjectArray expected) {
   struct network_layer *l = (struct network_layer *)nativeLayerPtr;
   for (int i = 0; i < l->miniBatchSize; i++) {
-    struct JDoubleArray jexpected;
-    jexpected.jarray = (*env)->GetObjectArrayElement(env, expected, i);
-    GetDoubleArray(env, &jexpected);
+    jarray singleExpected = (*env)->GetObjectArrayElement(env, expected, i);
+    struct JArray jexpected = GetDoubleArray(env, singleExpected);
     set_expected_softmax_cross_entropy_layer(l->layer, l->gradients[i], jexpected.array);
-    ReleaseDoubleArray(env, &jexpected, JNI_ABORT);
+    ReleaseArray(&jexpected, JNI_ABORT);
   }
 }

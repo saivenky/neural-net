@@ -49,7 +49,7 @@ public class MnistTester {
         NeuralNetworkTrainer trainer = new NeuralNetworkTrainer(trainingData);
         trainer.setBatchSize(60);
 
-        NeuralNetwork nn;
+        INeuralNetwork nn;
         switch(networkType) {
             case "standard":
                 System.out.println("standard)");
@@ -99,10 +99,10 @@ public class MnistTester {
         trainer.setLearningRate(0.0001);
         trainer.train(epochEvaluator, batchEvaluator);
 
-        System.out.println("test data correct: " + checkLabelsAndWriteIncorrect(nn, testData, testLabels, outputDir));
+        System.out.println("test data correct: " + checkLabelsAndWriteIncorrect(nn, testData, testLabels, trainer.batchSize, outputDir));
     }
 
-    private static NeuralNetwork getStandardNeuralNetwork(NeuralNetworkTrainer trainer) {
+    private static INeuralNetwork getStandardNeuralNetwork(NeuralNetworkTrainer trainer) {
         int[] layers = {IMAGE_WIDTH * IMAGE_HEIGHT, 120, 10};
         double[] dropouts = {0, 0.25, 0};
 
@@ -116,7 +116,7 @@ public class MnistTester {
         return nn;
     }
 
-    private static NeuralNetwork getCConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
+    private static INeuralNetwork getCConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         saivenky.neural.c.InputLayer inputLayer = new saivenky.neural.c.InputLayer(
                 IMAGE_WIDTH * IMAGE_HEIGHT, trainer.batchSize);
         inputLayer.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
@@ -133,8 +133,9 @@ public class MnistTester {
         ReluLayer reluLayer2 = new ReluLayer(fcLayer1);
         FullyConnectedLayer fcLayer2 = new FullyConnectedLayer(reluLayer2, 10);
         SoftmaxCrossEntropyLayer outputLayer = new SoftmaxCrossEntropyLayer(fcLayer2, trainer.batchSize);
-        NeuralNetwork nn = new NeuralNetwork(
-                inputLayer, CrossEntropy.getInstance(), trainer.batchSize,
+        saivenky.neural.c.NeuralNetwork nn = new saivenky.neural.c.NeuralNetwork(
+                trainer.batchSize,
+                inputLayer,
                 convolutionLayer,
                 poolingLayer,
                 reluLayer1,
@@ -145,13 +146,13 @@ public class MnistTester {
         System.out.println("...");
 
         trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(0.003);
+        trainer.setLearningRate(0.18);
         trainer.setEpochs(1);
 
         return nn;
     }
 
-    private static NeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
+    private static INeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
         imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
@@ -176,7 +177,7 @@ public class MnistTester {
         return nn;
     }
 
-    private static NeuralNetwork getSmallConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
+    private static INeuralNetwork getSmallConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
         NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
         imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
         InputLayer inputLayer = new InputLayer(imageNeurons);
@@ -201,7 +202,7 @@ public class MnistTester {
         return nn;
     }
 
-    private static double checkLabelsAndWriteIncorrect(NeuralNetwork nn, Data.Example[] data, int[] labels, File outputDir) {
+    private static double checkLabelsAndWriteIncorrect(INeuralNetwork nn, Data.Example[] data, int[] labels, int batchSize, File outputDir) {
         double correct = 0;
         if(data.length != labels.length) throw  new RuntimeException("Data and label length mismatch");
 
@@ -212,31 +213,41 @@ public class MnistTester {
         if(!incorrectDirectory.exists()) incorrectDirectory.mkdir();
         if(!correctDirectory.exists()) correctDirectory.mkdir();
 
-        double[][] input = new double[1][];
+        double[][] input = new double[batchSize][];
+        int[] labelIndex = new int[batchSize];
+        int batchEnd = batchSize - 1;
         for(int i = 0; i < data.length; i++) {
             Data.Example e = data[i];
-            input[0] = e.input;
-            nn.run(input);
-            int actual = argmax(nn.predicted[0]);
-            int expected = labels[i];
-            String filename = String.format("%7d-a%de%d.png", i, actual, expected);
-            File image;
-            if (actual == expected) {
-                correct += 1;
-                image = new File(correctDirectory, filename);
-            }
-            else {
-                image = new File(incorrectDirectory, filename);
-            }
+            input[i % batchSize] = e.input;
+            labelIndex[i % batchSize] = i;
+            if (i == batchEnd) {
+                nn.run(input);
+                for (int t = 0; t < batchSize; t++) {
+                    double[] predicted = nn.getPredicted()[t];
+                    int labelI = labelIndex[t];
+                    int predictedLabel = argmax(predicted);
+                    int expectedLabel = labels[labelI];
+                    String filename = String.format("%7d-a%de%d.png", i, predictedLabel, expectedLabel);
+                    File image;
+                    if (predictedLabel == expectedLabel) {
+                        correct += 1;
+                        image = new File(correctDirectory, filename);
+                    }
+                    else {
+                        image = new File(incorrectDirectory, filename);
+                    }
 
-            ImageWriter.write(image, IMAGE_WIDTH, IMAGE_HEIGHT, e.input);
+                    ImageWriter.write(image, IMAGE_WIDTH, IMAGE_HEIGHT, e.input);
+                }
+                batchEnd += batchSize;
+            }
         }
 
         return correct / data.length;
     }
 
     private static double checkLabels(
-            NeuralNetwork nn, Data.Example[] data, int[] labels, int batchSize, int lengthToCheck) {
+            INeuralNetwork nn, Data.Example[] data, int[] labels, int batchSize, int lengthToCheck) {
         double correct = 0;
         if(data.length != labels.length) throw  new RuntimeException("Data and label length mismatch");
         double[][] input = new double[batchSize][];
@@ -249,7 +260,7 @@ public class MnistTester {
             if (i == batchEnd) {
                 nn.run(input);
                 for (int t = 0; t < batchSize; t++) {
-                    double[] predicted = nn.predicted[t];
+                    double[] predicted = nn.getPredicted()[t];
                     int labelI = labelIndex[t];
                     int predictedLabel = argmax(predicted);
                     if (predictedLabel == labels[labelI]) correct += 1;

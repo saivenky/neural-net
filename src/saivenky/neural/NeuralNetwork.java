@@ -104,10 +104,10 @@ public class NeuralNetwork implements INeuralNetwork {
     public void train(double[][] input, double[][] output) {
         feedforward(input);
         backpropagate(output);
-        trainedExamples += 1;
+        trainedExamples += input.length;
     }
 
-    void reselectDropouts() {
+    public void reselectDropouts() {
         for (ILayer l : layers) {
             if (l instanceof IDropoutLayer) {
                 ((IDropoutLayer)l).reselectDropout();

@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <stdio.h>
 #include "jni_helper.h"
 #include "network_layer.h"
 
@@ -11,23 +10,39 @@ void SetByteBuffer(JNIEnv *env, jobject obj, const char *fieldName, int index, v
   jobject byteBuffer = (*env)->NewDirectByteBuffer(env, address, len);
   (*env)->SetObjectArrayElement(env, objArray, index, byteBuffer);
 }
-void GetIntArray(JNIEnv *env, struct JIntArray *array) {
-  array->array = (*env)->GetIntArrayElements(env, array->jarray, &(array->isCopy));
+struct JArray GetArray(JNIEnv *env, jarray array,
+  void * (*get)(JNIEnv *, jarray, jboolean *),
+  void (*release)(JNIEnv *, jarray, void *, jint)) {
+  struct JArray result;
+  result.env = env;
+  result.jarray = array;
+  result.get = get;
+  result.release = release;
+  result.array = get(env, result.jarray, &(result.isCopy));
+  return result;
 }
 
-void ReleaseIntArray(JNIEnv *env, struct JIntArray *array, jint mode) {
+struct JArray GetIntArray(JNIEnv *env, jarray array) {
+  return GetArray(env, array,
+      (void *(*)(JNIEnv *,jarray,jboolean *))(*env)->GetIntArrayElements,
+      (void (*)(JNIEnv *,jarray,void  *,jint))(*env)->ReleaseIntArrayElements);
+}
+
+struct JArray GetDoubleArray(JNIEnv *env, jarray array) {
+  return GetArray(env, array,
+      (void *(*)(JNIEnv *,jarray,jboolean *))(*env)->GetDoubleArrayElements,
+      (void (*)(JNIEnv *,jarray,void  *,jint))(*env)->ReleaseDoubleArrayElements);
+}
+
+struct JArray GetLongArray(JNIEnv *env, jarray array) {
+  return GetArray(env, array,
+      (void *(*)(JNIEnv *,jarray,jboolean *))(*env)->GetLongArrayElements,
+      (void (*)(JNIEnv *,jarray,void  *,jint))(*env)->ReleaseLongArrayElements);
+}
+
+void ReleaseArray(struct JArray *array, jint mode) {
   if (array->isCopy == JNI_TRUE) {
-    (*env)->ReleaseIntArrayElements(env, array->jarray, array->array, mode);
-  }
-}
-
-void GetDoubleArray(JNIEnv *env, struct JDoubleArray *array) {
-  array->array = (*env)->GetDoubleArrayElements(env, array->jarray, &(array->isCopy));
-}
-
-void ReleaseDoubleArray(JNIEnv *env, struct JDoubleArray *array, jint mode) {
-  if (array->isCopy == JNI_TRUE) {
-    (*env)->ReleaseDoubleArrayElements(env, array->jarray, array->array, mode);
+    array->release(array->env, array->jarray, array->array, mode);
   }
 }
 
