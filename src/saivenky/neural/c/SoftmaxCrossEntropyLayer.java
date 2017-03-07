@@ -1,7 +1,6 @@
 package saivenky.neural.c;
 
 import saivenky.neural.IOutputLayer;
-import saivenky.neural.NeuronSet;
 
 import java.nio.ByteBuffer;
 
@@ -23,26 +22,6 @@ public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
     private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
     private native void setExpected(long nativeLayerPtr, double[][] expected);
-
-    @Override
-    public NeuronSet getNeurons() {
-        return null;
-    }
-
-    @Override
-    public void run() {
-        feedforward();
-    }
-
-    @Override
-    public void feedforward() {
-        feedforward(nativeLayerPtr);
-    }
-
-    @Override
-    public void backpropagate(boolean backpropagateToPreviousLayer) {
-        backpropogate(nativeLayerPtr);
-    }
 
     @Override
     public void gradientDescent(double rate) {

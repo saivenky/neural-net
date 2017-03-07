@@ -1,7 +1,6 @@
 package saivenky.neural.c;
 
 import saivenky.neural.FilterDimensionCalculator;
-import saivenky.neural.NeuronSet;
 
 /**
  * Created by saivenky on 2/16/17.
@@ -24,29 +23,4 @@ public class ConvolutionLayer extends Layer {
     private native long create(
             int[] inputShape, int[] kernelShape, int frames, int stride, int padding, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
-
-    @Override
-    public NeuronSet getNeurons() {
-        return null;
-    }
-
-    @Override
-    public void run() {
-        feedforward();
-    }
-
-    @Override
-    public void feedforward() {
-        feedforward(nativeLayerPtr);
-    }
-
-    @Override
-    public void backpropagate(boolean backpropagateToPreviousLayer) {
-        backpropogate(nativeLayerPtr);
-    }
-
-    @Override
-    public void gradientDescent(double rate) {
-        update(nativeLayerPtr, rate);
-    }
 }

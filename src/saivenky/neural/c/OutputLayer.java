@@ -1,7 +1,6 @@
 package saivenky.neural.c;
 
 import saivenky.neural.IOutputLayer;
-import saivenky.neural.NeuronSet;
 
 import java.nio.ByteBuffer;
 
@@ -24,20 +23,11 @@ public class OutputLayer extends Layer implements IOutputLayer {
     private native long destroy(long nativeLayerPtr);
 
     @Override
-    public NeuronSet getNeurons() {
-        return null;
-    }
-
-    @Override
-    public void run() {
-    }
-
-    @Override
     public void feedforward() {
     }
 
     @Override
-    public void backpropagate(boolean backpropagateToPreviousLayer) {
+    public void backpropagate() {
     }
 
     @Override

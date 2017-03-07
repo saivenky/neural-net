@@ -1,14 +1,8 @@
 package saivenky.neural.mnist;
 
 import saivenky.neural.*;
-import saivenky.neural.activation.Linear;
-import saivenky.neural.activation.Sigmoid;
-import saivenky.neural.c.FullyConnectedLayer;
-import saivenky.neural.c.ReluLayer;
-import saivenky.neural.c.SoftmaxCrossEntropyLayer;
-import saivenky.neural.cost.CrossEntropy;
+import saivenky.neural.c.*;
 import saivenky.neural.image.ImageWriter;
-import saivenky.neural.neuron.GaussianInitializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,7 +26,7 @@ public class MnistTester {
         String outputDirectoryPath = args[4];
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("Enter network type (standard, cnn, c-cnn, or small-cnn): ");
+        System.out.print("Enter network type (standard, cnn): ");
         String networkType = br.readLine().toLowerCase().intern();
 
         File outputDir = MnistReader.getRealFile(outputDirectoryPath);
@@ -55,17 +49,9 @@ public class MnistTester {
                 System.out.println("standard)");
                 nn = getStandardNeuralNetwork(trainer);
                 break;
-            case "c-cnn":
-                nn = getCConvolutionNeuralNetwork(trainer);
-                System.out.println("cnn)");
-                break;
             case "cnn":
                 nn = getConvolutionNeuralNetwork(trainer);
                 System.out.println("cnn)");
-                break;
-            case "small-cnn":
-                nn = getSmallConvolutionNeuralNetwork(trainer);
-                System.out.println("small-cnn)");
                 break;
             default:
                 nn = getStandardNeuralNetwork(trainer);
@@ -85,12 +71,14 @@ public class MnistTester {
             @Override
             public void f(int iteration, long timeTaken) {
                 if (timeTaken < 30) return;
-                if (shouldEvaluateBatch[0]) {
-                    double accuracy = checkLabels(nn, testData, testLabels, trainer.batchSize, 120);
-                    System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double) timeTaken / 1000, accuracy);
-                    if (accuracy > 0.9) shouldEvaluateBatch[0] = false;
-                } else {
-                    System.out.printf("Batch %d complete (%.3fs).\n", iteration, (double) timeTaken / 1000);
+                if (iteration % 100 == 0) {
+                    if (shouldEvaluateBatch[0]) {
+                        double accuracy = checkLabels(nn, testData, testLabels, trainer.batchSize, 120);
+                        System.out.printf("Batch %d complete (%.3fs). Accuracy: %s\n", iteration, (double) timeTaken / 1000, accuracy);
+                        if (accuracy > 0.9) shouldEvaluateBatch[0] = false;
+                    } else {
+                        System.out.printf("Batch %d complete (%.3fs).\n", iteration, (double) timeTaken / 1000);
+                    }
                 }
             }
         };
@@ -103,10 +91,22 @@ public class MnistTester {
     }
 
     private static INeuralNetwork getStandardNeuralNetwork(NeuralNetworkTrainer trainer) {
-        int[] layers = {IMAGE_WIDTH * IMAGE_HEIGHT, 120, 10};
-        double[] dropouts = {0, 0.25, 0};
+        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT, trainer.batchSize);
+        inputLayer.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
 
-        NeuralNetwork nn = new NeuralNetwork(layers, Sigmoid.getInstance(), CrossEntropy.getInstance(), GaussianInitializer.getInstance(), dropouts);
+        FullyConnectedLayer fcLayer1 = new FullyConnectedLayer(inputLayer, 100);
+        SigmoidLayer sigmoidLayer1 = new SigmoidLayer(fcLayer1);
+
+        FullyConnectedLayer fcLayer2 = new FullyConnectedLayer(sigmoidLayer1, 10);
+        SoftmaxCrossEntropyLayer softmaxCrossEntropyLayer = new SoftmaxCrossEntropyLayer(fcLayer2, trainer.batchSize);
+
+        NeuralNetwork nn = new NeuralNetwork(
+                trainer.batchSize,
+                inputLayer,
+                fcLayer1,
+                sigmoidLayer1,
+                fcLayer2,
+                softmaxCrossEntropyLayer);
         System.out.println("...");
 
         trainer.setNeuralNetwork(nn);
@@ -116,23 +116,22 @@ public class MnistTester {
         return nn;
     }
 
-    private static INeuralNetwork getCConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
-        saivenky.neural.c.InputLayer inputLayer = new saivenky.neural.c.InputLayer(
-                IMAGE_WIDTH * IMAGE_HEIGHT, trainer.batchSize);
+    private static INeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
+        InputLayer inputLayer = new InputLayer(IMAGE_WIDTH * IMAGE_HEIGHT, trainer.batchSize);
         inputLayer.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
+
         int[] kernelShape = {5, 5, 1};
         int[] poolShape = {2, 2, 1};
-
-        saivenky.neural.c.ConvolutionLayer convolutionLayer = new saivenky.neural.c.ConvolutionLayer(
-                inputLayer, kernelShape, 20, 0);
-        saivenky.neural.c.MaxPoolingLayer poolingLayer = new saivenky.neural.c.MaxPoolingLayer(
-                convolutionLayer, poolShape, 2);
-        saivenky.neural.c.ReluLayer reluLayer1 = new saivenky.neural.c.ReluLayer(poolingLayer);
+        ConvolutionLayer convolutionLayer = new ConvolutionLayer(inputLayer, kernelShape, 20, 0);
+        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(convolutionLayer, poolShape, 2);
+        ReluLayer reluLayer1 = new ReluLayer(poolingLayer);
 
         FullyConnectedLayer fcLayer1 = new FullyConnectedLayer(reluLayer1, 100);
         ReluLayer reluLayer2 = new ReluLayer(fcLayer1);
+
         FullyConnectedLayer fcLayer2 = new FullyConnectedLayer(reluLayer2, 10);
         SoftmaxCrossEntropyLayer outputLayer = new SoftmaxCrossEntropyLayer(fcLayer2, trainer.batchSize);
+
         saivenky.neural.c.NeuralNetwork nn = new saivenky.neural.c.NeuralNetwork(
                 trainer.batchSize,
                 inputLayer,
@@ -148,56 +147,6 @@ public class MnistTester {
         trainer.setNeuralNetwork(nn);
         trainer.setLearningRate(0.18);
         trainer.setEpochs(1);
-
-        return nn;
-    }
-
-    private static INeuralNetwork getConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
-        NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
-        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
-        InputLayer inputLayer = new InputLayer(imageNeurons);
-
-        ConvolutionLayer convolutionLayer = new ConvolutionLayer(
-                20, 7, 7, inputLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance());
-        MaxPoolingLayer poolingLayer = new MaxPoolingLayer(2, 2, convolutionLayer);
-
-        StandardLayer standardLayer = new StandardLayer(
-                100, poolingLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
-        StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
-
-        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), 1,
-                convolutionLayer, poolingLayer, standardLayer, outputLayer);
-        System.out.println("...");
-
-        trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(0.1);
-        trainer.setEpochs(200);
-
-        return nn;
-    }
-
-    private static INeuralNetwork getSmallConvolutionNeuralNetwork(NeuralNetworkTrainer trainer) {
-        NeuronSet imageNeurons = new NeuronSet(new INeuron[IMAGE_WIDTH * IMAGE_HEIGHT]);
-        imageNeurons.setShape(IMAGE_WIDTH, IMAGE_HEIGHT, 1);
-        InputLayer inputLayer = new InputLayer(imageNeurons);
-
-        saivenky.neural.ConvolutionLayer convolutionLayer = new saivenky.neural.ConvolutionLayer(
-                10, 14, 14, inputLayer, Linear.getInstance(), GaussianInitializer.getInstance());
-        System.out.print(".");
-        System.out.print(".");
-
-        StandardLayer standardLayer = new StandardLayer(
-                30, convolutionLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
-        StandardLayer outputLayer = new StandardLayer(
-                10, standardLayer, Sigmoid.getInstance(), GaussianInitializer.getInstance(), 0);
-
-        NeuralNetwork nn = new NeuralNetwork(inputLayer, CrossEntropy.getInstance(), 1, convolutionLayer, standardLayer, outputLayer);
-        System.out.println(".");
-
-        trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(0.3);
-        trainer.setEpochs(15);
 
         return nn;
     }

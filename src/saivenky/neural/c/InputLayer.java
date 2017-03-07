@@ -1,7 +1,6 @@
 package saivenky.neural.c;
 
 import saivenky.neural.IInputLayer;
-import saivenky.neural.NeuronSet;
 
 import java.nio.ByteBuffer;
 
@@ -19,11 +18,6 @@ public class InputLayer extends Layer implements IInputLayer {
     private native long create(int size, int miniBatchSize);
     private native long destroy(long nativeLayerPtr);
 
-    @Override
-    public NeuronSet getNeurons() {
-        return null;
-    }
-
     public void setInput(double[][] input) {
         for(int b = 0; b < input.length; b++) {
             for (int i = 0, bbIndex = 0; i < input[b].length; i++, bbIndex += SIZEOF_DOUBLE) {
@@ -37,16 +31,11 @@ public class InputLayer extends Layer implements IInputLayer {
     }
 
     @Override
-    public void run() {
-        feedforward();
-    }
-
-    @Override
     public void feedforward() {
     }
 
     @Override
-    public void backpropagate(boolean backpropagateToPreviousLayer) {
+    public void backpropagate() {
     }
 
     @Override

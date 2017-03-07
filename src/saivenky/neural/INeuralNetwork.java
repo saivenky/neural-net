@@ -8,5 +8,4 @@ public interface INeuralNetwork {
     void run(double[][] input);
     void update(double rate);
     void train(double[][] input, double[][] output);
-    void reselectDropouts();
 }

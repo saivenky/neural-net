@@ -71,8 +71,4 @@ public class NeuralNetwork implements INeuralNetwork {
         hasPredictedChanged = true;
         trainedExample += input.length;
     }
-
-    @Override
-    public void reselectDropouts() {
-    }
 }
