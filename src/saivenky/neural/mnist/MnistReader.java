@@ -10,9 +10,9 @@ import java.util.zip.GZIPInputStream;
  * Created by saivenky on 1/28/17.
  */
 class MnistReader {
-    private static double[] readImage(InputStream stream, int rows, int columns) {
+    private static float[] readImage(InputStream stream, int rows, int columns) {
         int totalBytes = rows * columns;
-        double[] imagePixels = new double[totalBytes];
+        float[] imagePixels = new float[totalBytes];
         byte[] rawBytes = new byte[totalBytes];
         int numBytesRead = 0;
 
@@ -46,14 +46,14 @@ class MnistReader {
         return file;
     }
 
-    private static double[][] readImages(File imagesFile) throws IOException {
+    private static float[][] readImages(File imagesFile) throws IOException {
         DataInputStream dis = new DataInputStream(new GZIPInputStream(new FileInputStream(imagesFile)));
         dis.readInt(); //magic num
         int numImages = dis.readInt();
         int rows = dis.readInt();
         int columns = dis.readInt();
 
-        double[][] images = new double[numImages][];
+        float[][] images = new float[numImages][];
         for(int i = 0; i < numImages; i++) {
             images[i] = readImage(dis, rows, columns);
         }
@@ -74,8 +74,8 @@ class MnistReader {
         return labels;
     }
 
-    private static double[] toOutput(int label) {
-        double[] output = new double[10];
+    private static float[] toOutput(int label) {
+        float[] output = new float[10];
         output[label] = 1;
         return output;
     }
@@ -84,7 +84,7 @@ class MnistReader {
         File imagesFile = getRealFile(imagesFilePath);
         File labelsFile = getRealFile(labelsFilePath);
         System.out.printf("loading MNIST (images: %s, labels: %s)", imagesFile.getName(), labelsFile.getName());
-        double[][] images = readImages(imagesFile);
+        float[][] images = readImages(imagesFile);
         System.out.print(".");
         int[] labels = readLabels(labelsFile);
         System.out.print(".");

@@ -18,8 +18,8 @@ struct network_layer *create_network_layer(
   l->gradients = malloc(previousLayer->miniBatchSize * sizeof(struct gradient));
 
   for (int i = 0; i < l->miniBatchSize; i++) {
-    double *outputSignal = previousLayer->activations ? previousLayer->activations[i].outputSignal : NULL;
-    double *outputError = previousLayer->gradients ? previousLayer->gradients[i].outputError : NULL;
+    float_t *outputSignal = previousLayer->activations ? previousLayer->activations[i].outputSignal : NULL;
+    float_t *outputError = previousLayer->gradients ? previousLayer->gradients[i].outputError : NULL;
     l->activations[i] = create_activation(layer, outputSignal);
     l->gradients[i] = create_gradient(layer, outputError);
   }
@@ -49,7 +49,7 @@ void backpropogate_network_layer(void *nativeLayerPtr, int batchIndex) {
       network_layer->gradients[batchIndex]);
 }
 
-void update_network_layer(void *nativeLayerPtr, double rate, int batchIndex) {
+void update_network_layer(void *nativeLayerPtr, float_t rate, int batchIndex) {
   struct network_layer *network_layer = (struct network_layer *)nativeLayerPtr;
   if (network_layer->update == NULL) return;
   network_layer->update(

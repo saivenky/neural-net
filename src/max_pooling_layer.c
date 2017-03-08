@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <float.h>
 #include "kernel_dim.h"
 #include "activation.h"
 #include "gradient.h"
@@ -17,13 +16,13 @@ struct max_pooling_layer *create_max_pooling_layer(int *inputShape, int *poolSha
   return l;
 }
 
-struct activation create_activation_max_pooling_layer(struct max_pooling_layer *l, double *inputActivation) {
+struct activation create_activation_max_pooling_layer(struct max_pooling_layer *l, float_t *inputActivation) {
   struct activation a = create_activation(inputActivation, l->outputShape.dim2);
   a.extra = malloc(l->outputShape.dim2 * sizeof(int));
   return a;
 }
 
-struct gradient create_gradient_max_pooling_layer(struct max_pooling_layer *l, double *inputError) {
+struct gradient create_gradient_max_pooling_layer(struct max_pooling_layer *l, float_t *inputError) {
   return create_gradient(inputError, l->outputShape.dim2);
 }
 
@@ -38,7 +37,7 @@ void feedforward_max_pooling_layer(struct max_pooling_layer *l, struct activatio
     for (int outY = 0, inYInit = 0; outY < l->outputShape.dim1; outY += l->outputShape.dim0, inYInit += l->inputStride.dim1) {
       for (int outX = 0, inXInit = 0; outX < l->outputShape.dim0; outX++, inXInit += l->inputStride.dim0) {
 
-        double maxActivation = -DBL_MAX;
+        float_t maxActivation = -FLOAT_MAX;
         int argMaxIndex = -1;
         for (int poolZ = 0, inZ = inZInit; poolZ < l->poolShape.depth; poolZ++, inZ += l->inputShape.dim1) {
           for (int poolY = 0, inYZ = inZ + inYInit; poolY < l->poolShape.height; poolY++, inYZ += l->inputShape.dim0) {
@@ -69,5 +68,5 @@ void backpropogate_max_pooling_layer(struct max_pooling_layer *l, struct activat
     int argMaxIndex = outputArgmaxIndex[i];
     g.inputError[argMaxIndex] += g.outputError[i];
   }
-  memset(g.outputError, 0, l->outputShape.dim2 * sizeof(double));
+  memset(g.outputError, 0, l->outputShape.dim2 * sizeof(float_t));
 }

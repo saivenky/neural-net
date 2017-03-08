@@ -4,11 +4,11 @@
 #include "saivenky_neural_c_InputLayer.h"
 #include "jni_helper.h"
 
-struct activation create_activation_input_layer_wrapper(void *layer, double *inputActivation) {
+struct activation create_activation_input_layer_wrapper(void *layer, float_t *inputActivation) {
   return create_activation_input_layer(layer);
 }
 
-struct gradient create_gradient_input_layer_wrapper(void *layer, double *inputError) {
+struct gradient create_gradient_input_layer_wrapper(void *layer, float_t *inputError) {
   return create_gradient_input_layer(layer);
 }
 

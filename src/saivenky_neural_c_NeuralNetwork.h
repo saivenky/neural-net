@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_NeuralNetwork_run
  * Signature: (JD)V
  */
 JNIEXPORT void JNICALL Java_saivenky_neural_c_NeuralNetwork_update
-  (JNIEnv *, jclass, jlong, jdouble);
+  (JNIEnv *, jclass, jlong, jfloat);
 
 /*
  * Class:     saivenky_neural_c_NeuralNetwork

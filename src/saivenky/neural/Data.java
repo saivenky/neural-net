@@ -7,11 +7,11 @@ import java.util.Random;
  */
 public class Data {
     public static class Example {
-        public double[] input;
-        public double[] output;
+        public float[] input;
+        public float[] output;
 
 
-        public Example(double input[], double[] output) {
+        public Example(float input[], float[] output) {
             this.input = input;
             this.output = output;
         }

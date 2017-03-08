@@ -21,25 +21,25 @@ public class SoftmaxCrossEntropyLayer extends Layer implements IOutputLayer {
 
     private native long create(int size, long previousLayerNativePtr);
     private native long destroy(long nativeLayerPtr);
-    private native void setExpected(long nativeLayerPtr, double[][] expected);
+    private native void setExpected(long nativeLayerPtr, float[][] expected);
 
     @Override
-    public void gradientDescent(double rate) {
+    public void gradientDescent(float rate) {
     }
 
     @Override
-    public void setSignalCostGradient(double[][] cost) {
+    public void setSignalCostGradient(float[][] cost) {
     }
 
-    public void setExpected(double[][] expected) {
+    public void setExpected(float[][] expected) {
         setExpected(nativeLayerPtr, expected);
     }
 
     @Override
-    public void getPredicted(double[][] predicted) {
+    public void getPredicted(float[][] predicted) {
         for(int b = 0; b < predicted.length; b++) {
-            for(int i = 0, bbIndex = 0; i < size; i++, bbIndex += SIZEOF_DOUBLE) {
-                predicted[b][i] = outputSignals[b].getDouble(bbIndex);
+            for(int i = 0, bbIndex = 0; i < size; i++, bbIndex += SIZEOF_FLOAT_T) {
+                predicted[b][i] = outputSignals[b].getFloat(bbIndex);
             }
         }
     }

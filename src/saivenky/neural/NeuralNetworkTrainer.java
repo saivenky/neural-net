@@ -7,7 +7,7 @@ public class NeuralNetworkTrainer {
     private INeuralNetwork neuralNetwork;
     private Data.Example[] trainData;
     public int batchSize;
-    private double learningRate;
+    private float learningRate;
     private int epochs;
 
     public NeuralNetworkTrainer(Data.Example[] trainData) {
@@ -22,7 +22,7 @@ public class NeuralNetworkTrainer {
         this.batchSize = batchSize;
     }
 
-    public void setLearningRate(double learningRate) {
+    public void setLearningRate(float learningRate) {
         this.learningRate = learningRate;
     }
 
@@ -49,8 +49,8 @@ public class NeuralNetworkTrainer {
         int batchEnd = batchSize - 1;
         int currentBatch = 0;
         long batchStartTime = System.currentTimeMillis();
-        double[][] input = new double[batchSize][];
-        double[][] output = new double[batchSize][];
+        float[][] input = new float[batchSize][];
+        float[][] output = new float[batchSize][];
         for(int j = 0; j < trainData.length; j++) {
             Data.Example e = trainData[j];
             input[j % batchSize] = e.input;

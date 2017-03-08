@@ -19,5 +19,5 @@ struct neural_network *create_neural_network(struct network_layer **layers, int 
 void destroy_neural_network(struct neural_network *);
 void feedforward_neural_network(struct neural_network *);
 void backpropogate_neural_network(struct neural_network *);
-void update_neural_network(struct neural_network *, double rate);
+void update_neural_network(struct neural_network *, float_t rate);
 #endif

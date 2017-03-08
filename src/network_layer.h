@@ -3,11 +3,11 @@
 #include "activation.h"
 #include "gradient.h"
 
-typedef struct activation(*create_activation_type)(void *, double *);
-typedef struct gradient(*create_gradient_type)(void *, double *);
+typedef struct activation(*create_activation_type)(void *, float_t *);
+typedef struct gradient(*create_gradient_type)(void *, float_t *);
 typedef void (*feedforward_type)(void *, struct activation);
 typedef void (*backpropogate_type)(void *, struct activation, struct gradient);
-typedef void (*update_type)(void *, double, struct gradient);
+typedef void (*update_type)(void *, float_t, struct gradient);
 
 struct network_layer {
   void *layer;
@@ -31,6 +31,6 @@ struct network_layer *create_network_layer(
     update_type);
 void feedforward_network_layer(void *nativeLayerPtr, int batchIndex);
 void backpropogate_network_layer(void *nativeLayerPtr, int batchIndex);
-void update_network_layer(void *nativeLayerPtr, double rate, int batchIndex);
+void update_network_layer(void *nativeLayerPtr, float_t rate, int batchIndex);
 void destroy_network_layer(struct network_layer *l);
 #endif

@@ -84,7 +84,7 @@ public class MnistTester {
         };
         trainer.train(epochEvaluator, batchEvaluator);
         trainer.setEpochs(1);
-        trainer.setLearningRate(0.0001);
+        trainer.setLearningRate(0.0001f);
         trainer.train(epochEvaluator, batchEvaluator);
 
         System.out.println("test data correct: " + checkLabelsAndWriteIncorrect(nn, testData, testLabels, trainer.batchSize, outputDir));
@@ -110,7 +110,7 @@ public class MnistTester {
         System.out.println("...");
 
         trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(3.0);
+        trainer.setLearningRate(3.0f);
         trainer.setEpochs(15);
 
         return nn;
@@ -145,7 +145,7 @@ public class MnistTester {
         System.out.println("...");
 
         trainer.setNeuralNetwork(nn);
-        trainer.setLearningRate(0.18);
+        trainer.setLearningRate(0.18f);
         trainer.setEpochs(1);
 
         return nn;
@@ -162,7 +162,7 @@ public class MnistTester {
         if(!incorrectDirectory.exists()) incorrectDirectory.mkdir();
         if(!correctDirectory.exists()) correctDirectory.mkdir();
 
-        double[][] input = new double[batchSize][];
+        float[][] input = new float[batchSize][];
         int[] labelIndex = new int[batchSize];
         int batchEnd = batchSize - 1;
         for(int i = 0; i < data.length; i++) {
@@ -172,7 +172,7 @@ public class MnistTester {
             if (i == batchEnd) {
                 nn.run(input);
                 for (int t = 0; t < batchSize; t++) {
-                    double[] predicted = nn.getPredicted()[t];
+                    float[] predicted = nn.getPredicted()[t];
                     int labelI = labelIndex[t];
                     int predictedLabel = argmax(predicted);
                     int expectedLabel = labels[labelI];
@@ -199,7 +199,7 @@ public class MnistTester {
             INeuralNetwork nn, Data.Example[] data, int[] labels, int batchSize, int lengthToCheck) {
         double correct = 0;
         if(data.length != labels.length) throw  new RuntimeException("Data and label length mismatch");
-        double[][] input = new double[batchSize][];
+        float[][] input = new float[batchSize][];
         int[] labelIndex = new int[batchSize];
         int batchEnd = batchSize - 1;
         for(int i = 0; i < lengthToCheck; i++) {
@@ -209,7 +209,7 @@ public class MnistTester {
             if (i == batchEnd) {
                 nn.run(input);
                 for (int t = 0; t < batchSize; t++) {
-                    double[] predicted = nn.getPredicted()[t];
+                    float[] predicted = nn.getPredicted()[t];
                     int labelI = labelIndex[t];
                     int predictedLabel = argmax(predicted);
                     if (predictedLabel == labels[labelI]) correct += 1;
@@ -221,8 +221,8 @@ public class MnistTester {
         return correct / lengthToCheck;
     }
 
-    private static int argmax(double[] array) {
-        double max = -Double.MAX_VALUE;
+    private static int argmax(float[] array) {
+        float max = -Float.MAX_VALUE;
         int indexOfMax = -1;
         for(int i = 0; i < array.length; i++) {
             if(array[i] > max) {

@@ -18,10 +18,10 @@ public class InputLayer extends Layer implements IInputLayer {
     private native long create(int size, int miniBatchSize);
     private native long destroy(long nativeLayerPtr);
 
-    public void setInput(double[][] input) {
+    public void setInput(float[][] input) {
         for(int b = 0; b < input.length; b++) {
-            for (int i = 0, bbIndex = 0; i < input[b].length; i++, bbIndex += SIZEOF_DOUBLE) {
-                outputSignals[b].putDouble(bbIndex, input[b][i]);
+            for (int i = 0, bbIndex = 0; i < input[b].length; i++, bbIndex += SIZEOF_FLOAT_T) {
+                outputSignals[b].putFloat(bbIndex, input[b][i]);
             }
         }
     }
@@ -39,6 +39,6 @@ public class InputLayer extends Layer implements IInputLayer {
     }
 
     @Override
-    public void gradientDescent(double rate) {
+    public void gradientDescent(float rate) {
     }
 }

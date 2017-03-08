@@ -48,7 +48,7 @@ void ReleaseArray(struct JArray *array, jint mode) {
 
 void copy_network_layer_buffers(JNIEnv *env, jobject obj, struct network_layer *network_layer, int size) {
   for (int i = 0; i < network_layer->miniBatchSize; i++) {
-    SetByteBuffer(env, obj, "outputSignals", i, network_layer->activations[i].outputSignal, size * sizeof(double));
-    SetByteBuffer(env, obj, "outputErrors", i, network_layer->gradients[i].outputError, size * sizeof(double));
+    SetByteBuffer(env, obj, "outputSignals", i, network_layer->activations[i].outputSignal, size * sizeof(float_t));
+    SetByteBuffer(env, obj, "outputErrors", i, network_layer->gradients[i].outputError, size * sizeof(float_t));
   }
 }

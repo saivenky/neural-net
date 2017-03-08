@@ -11,7 +11,7 @@ public class NeuralNetwork implements INeuralNetwork {
     private final IInputLayer inputLayer;
     private final IOutputLayer outputLayer;
     private final long nativePtr;
-    private double[][] predicted;
+    private float[][] predicted;
     private boolean hasPredictedChanged;
     private int trainedExample = 0;
 
@@ -32,17 +32,17 @@ public class NeuralNetwork implements INeuralNetwork {
         }
 
         hasPredictedChanged = false;
-        predicted = new double[miniBatchSize][outputLayer.size()];
+        predicted = new float[miniBatchSize][outputLayer.size()];
         nativePtr = create(nativeLayerPtrs);
     }
 
     public static native long create(long[] nativeLayerPtrs);
     public static native void run(long nativePtr);
-    public static native void update(long nativePtr, double rate);
+    public static native void update(long nativePtr, float rate);
     public static native void train(long nativePtr);
 
     @Override
-    public double[][] getPredicted() {
+    public float[][] getPredicted() {
         if (hasPredictedChanged) {
             outputLayer.getPredicted(predicted);
             hasPredictedChanged = false;
@@ -51,20 +51,20 @@ public class NeuralNetwork implements INeuralNetwork {
     }
 
     @Override
-    public void run(double[][] input) {
+    public void run(float[][] input) {
         inputLayer.setInput(input);
         run(nativePtr);
         hasPredictedChanged = true;
     }
 
     @Override
-    public void update(double rate) {
-        update(nativePtr, rate / (double)trainedExample);
+    public void update(float rate) {
+        update(nativePtr, rate / (float)trainedExample);
         trainedExample = 0;
     }
 
     @Override
-    public void train(double[][] input, double[][] output) {
+    public void train(float[][] input, float[][] output) {
         inputLayer.setInput(input);
         outputLayer.setExpected(output);
         train(nativePtr);

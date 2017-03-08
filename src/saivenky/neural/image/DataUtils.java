@@ -4,20 +4,20 @@ package saivenky.neural.image;
  * Created by saivenky on 1/28/17.
  */
 public class DataUtils {
-    public static double toPixel(byte b) {
+    public static float toPixel(byte b) {
         int unsigned = (int)b & 0xff;
         return toPixelFromByte(unsigned);
     }
 
-    public static double toPixelFromByte(int byteValue) {
+    private static float toPixelFromByte(int byteValue) {
         return normalize(byteValue, 0, 255);
     }
 
-    public static byte toPixelByte(double doubleValue) {
-        return (byte)(doubleValue * (Byte.MAX_VALUE - Byte.MIN_VALUE) + Byte.MIN_VALUE);
+    static byte toPixelByte(float floatValue) {
+        return (byte)(floatValue * (Byte.MAX_VALUE - Byte.MIN_VALUE) + Byte.MIN_VALUE);
     }
 
-    public static double normalize(double d, double min, double max) {
+    private static float normalize(float d, float min, float max) {
         return (d - min) / (max - min);
     }
 

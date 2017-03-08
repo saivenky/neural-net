@@ -8,8 +8,8 @@ struct sigmoid_layer {
 };
 
 struct sigmoid_layer *create_sigmoid_layer(int size);
-struct activation create_activation_sigmoid_layer(struct sigmoid_layer *, double *inputActivation);
-struct gradient create_gradient_sigmoid_layer(struct sigmoid_layer *, double *inputError);
+struct activation create_activation_sigmoid_layer(struct sigmoid_layer *, float_t *inputActivation);
+struct gradient create_gradient_sigmoid_layer(struct sigmoid_layer *, float_t *inputError);
 void destroy_sigmoid_layer(struct sigmoid_layer *l);
 void feedforward_sigmoid_layer(struct sigmoid_layer *l, struct activation);
 void backpropogate_sigmoid_layer(struct sigmoid_layer *l, struct activation, struct gradient);

@@ -18,7 +18,7 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_NeuralNetwork_run
 }
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_NeuralNetwork_update
-(JNIEnv *env, jclass clazz, jlong nativePtr, jdouble rate) {
+(JNIEnv *env, jclass clazz, jlong nativePtr, jfloat rate) {
   struct neural_network *nn = (struct neural_network *)nativePtr;
   update_neural_network(nn, rate);
 }

@@ -31,7 +31,7 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_Layer_backpropogate
  * Signature: (JD)V
  */
 JNIEXPORT void JNICALL Java_saivenky_neural_c_Layer_update
-  (JNIEnv *, jclass, jlong, jdouble);
+  (JNIEnv *, jclass, jlong, jfloat);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
  * Created by saivenky on 2/19/17.
  */
 public abstract class Layer implements ILayer {
-    static final int SIZEOF_DOUBLE = 8;
+    static final int SIZEOF_FLOAT_T = 4;
 
     private static final ByteOrder NATIVE_ORDER;
 
@@ -40,7 +40,7 @@ public abstract class Layer implements ILayer {
 
     public static native void feedforward(long nativeLayerPtr);
     public static native void backpropogate(long nativeLayerPtr);
-    public static native void update(long nativeLayerPtr, double rate);
+    public static native void update(long nativeLayerPtr, float rate);
 
     public void feedforward() {
         feedforward(nativeLayerPtr);
@@ -50,7 +50,7 @@ public abstract class Layer implements ILayer {
         backpropogate(nativeLayerPtr);
     }
 
-    public void gradientDescent(double rate) {
+    public void gradientDescent(float rate) {
         update(nativeLayerPtr, rate);
     }
 }

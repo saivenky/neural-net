@@ -5,13 +5,13 @@
 #include "gradient.h"
 #include "sigmoid_layer.h"
 
-double sigmoid(double z) {
-  return 1.0 / (1.0 + exp(-z));
+float_t sigmoid(float_t z) {
+  return 1.0f / (1.0f + expf(-z));
 }
 
-double sigmoid1(double z) {
-  double s = sigmoid(z);
-  return s * (1.0 - s);
+float_t sigmoid1(float_t z) {
+  float_t s = sigmoid(z);
+  return s * (1.0f - s);
 }
 
 struct sigmoid_layer *create_sigmoid_layer(int size) {
@@ -20,11 +20,11 @@ struct sigmoid_layer *create_sigmoid_layer(int size) {
   return l;
 }
 
-struct activation create_activation_sigmoid_layer(struct sigmoid_layer *l, double *inputActivation) {
+struct activation create_activation_sigmoid_layer(struct sigmoid_layer *l, float_t *inputActivation) {
   return create_activation(inputActivation, l->size);
 }
 
-struct gradient create_gradient_sigmoid_layer(struct sigmoid_layer *l, double *inputError) {
+struct gradient create_gradient_sigmoid_layer(struct sigmoid_layer *l, float_t *inputError) {
   return create_gradient(inputError, l->size);
 }
 
@@ -44,5 +44,5 @@ void backpropogate_sigmoid_layer(struct sigmoid_layer *l, struct activation a, s
       g.inputError[i] += sigmoid1(a.inputActivation[i]) * g.outputError[i];
     }
   }
-  memset(g.outputError, 0, l->size * sizeof(double));
+  memset(g.outputError, 0, l->size * sizeof(float_t));
 }

@@ -10,12 +10,12 @@ import java.io.IOException;
  * Created by saivenky on 1/28/17.
  */
 public class ImageWriter {
-    public static void write(File f, int rows, int columns, double[] pixels) {
+    public static void write(File f, int rows, int columns, float[] pixels) {
         BufferedImage image = new BufferedImage(columns, rows, BufferedImage.TYPE_BYTE_GRAY);
         for(int r = 0; r < rows; r++) {
             for(int c = 0; c < columns; c++) {
                 int index = r * columns + c;
-                double pixel = pixels[index];
+                float pixel = pixels[index];
                 byte val = DataUtils.toPixelByte(pixel);
                 image.setRGB(c, r, val);
             }
@@ -30,7 +30,7 @@ public class ImageWriter {
 
     public static void main(String[] args) throws IOException {
         File f = new File("/home/saivenky/image-test.png");
-        double[] pixels = {0, 0, 1, 0, 1, 0, 1, 0, 0};
+        float[] pixels = {0, 0, 1, 0, 1, 0, 1, 0, 0};
         write(f, 3, 3, pixels);
     }
 }

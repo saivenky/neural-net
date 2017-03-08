@@ -9,13 +9,13 @@ struct output_layer *create_output_layer(int size) {
   return l;
 }
 
-struct activation create_activation_output_layer(struct output_layer *l, double *inputActivation) {
+struct activation create_activation_output_layer(struct output_layer *l, float_t *inputActivation) {
   return create_activation_passthru(inputActivation);
 }
 
-struct gradient create_gradient_output_layer(struct output_layer *l, double *inputError) {
+struct gradient create_gradient_output_layer(struct output_layer *l, float_t *inputError) {
   struct gradient g = create_gradient_passthru(inputError);
-  g.extra = (double *)malloc(l->size * sizeof(double));
+  g.extra = (float_t *)malloc(l->size * sizeof(float_t));
   return g;
 }
 

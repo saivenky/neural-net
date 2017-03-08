@@ -64,7 +64,7 @@ void backpropogate_neural_network(struct neural_network *nn) {
   thread_neural_network(nn, &backpropogate_neural_network_thread);
 }
 
-void update_neural_network(struct neural_network *nn, double rate) {
+void update_neural_network(struct neural_network *nn, float_t rate) {
   int miniBatchSize = nn->layers[0]->miniBatchSize;
   for (int t = 0; t < miniBatchSize; t++) {
     for (int i = 0; i < nn->size; i++) {

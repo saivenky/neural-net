@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=-O3 -fPIC
+FLAGS=-O3 -fPIC -Wfloat-conversion
 JNI=-I"/usr/lib/jvm/java-8-oracle/include" -I"/usr/lib/jvm/java-8-oracle/include/linux"
 
 all: libneural.so

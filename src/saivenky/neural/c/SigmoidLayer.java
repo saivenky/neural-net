@@ -16,6 +16,6 @@ public class SigmoidLayer extends Layer {
     private native long destroy(long nativeLayerPtr);
 
     @Override
-    public void gradientDescent(double rate) {
+    public void gradientDescent(float rate) {
     }
 }

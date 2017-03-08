@@ -12,6 +12,6 @@ JNIEXPORT void JNICALL Java_saivenky_neural_c_Layer_backpropogate
 }
 
 JNIEXPORT void JNICALL Java_saivenky_neural_c_Layer_update
-(JNIEnv *env, jclass clazz, jlong nativeLayerPtr, jdouble rate) {
+(JNIEnv *env, jclass clazz, jlong nativeLayerPtr, jfloat rate) {
   update_network_layer((void *)nativeLayerPtr, rate, 0);
 }
